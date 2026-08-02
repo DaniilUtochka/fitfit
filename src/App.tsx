@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import './App.css'
+import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -25,7 +25,7 @@ function App() {
   // Первый кадр до восстановления сессии — не мигаем экраном логина.
   if (loading) return null
 
-  return session ? <Home session={session} /> : <Login />
+  return session ? <ExercisesScreen session={session} /> : <Login />
 }
 
 function Login() {
@@ -47,39 +47,31 @@ function Login() {
   }
 
   return (
-    <main className="screen">
-      <div className="mark" aria-hidden="true">
-        F
-      </div>
-      <h1>FitFit</h1>
-      <p className="muted">Трекер тренировок</p>
-      <button className="btn btn-google" onClick={signIn} disabled={pending}>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-2 px-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
+      <BrandMark />
+      <h1 className="text-4xl font-bold tracking-tight text-ink-strong">FitFit</h1>
+      <p className="text-muted">Трекер тренировок</p>
+      <button
+        onClick={signIn}
+        disabled={pending}
+        className="mt-6 inline-flex min-h-[52px] items-center gap-3 rounded-2xl bg-white px-6 text-[17px] font-semibold text-[#1f2430] shadow-lg disabled:opacity-60"
+      >
         <GoogleIcon />
         {pending ? 'Открываю Google…' : 'Войти через Google'}
       </button>
-      {error && <p className="error">{error}</p>}
+      {error && <p className="mt-3 text-sm text-danger">{error}</p>}
     </main>
   )
 }
 
-function Home({ session }: { session: Session }) {
-  async function signOut() {
-    await supabase.auth.signOut()
-  }
-
+function BrandMark() {
   return (
-    <main className="screen">
-      <div className="mark" aria-hidden="true">
-        F
-      </div>
-      <h1>FitFit</h1>
-      <p className="lead">Вы вошли.</p>
-      <p className="muted">{session.user.email}</p>
-      <p className="muted">Тренировки — скоро.</p>
-      <button className="link-btn" onClick={signOut}>
-        Выйти
-      </button>
-    </main>
+    <div
+      className="mb-4 grid size-[88px] place-items-center rounded-[22px] bg-gradient-to-br from-brand-hi to-brand text-[52px] font-extrabold text-white shadow-[0_10px_30px_-8px_rgba(79,70,229,0.6)]"
+      aria-hidden="true"
+    >
+      F
+    </div>
   )
 }
 
