@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
+import { buildMuscleGroupLinks } from './logic'
 
 export type MuscleGroup = Database['public']['Tables']['muscle_groups']['Row']
 
@@ -70,12 +71,11 @@ export function useCreateExercise() {
         .single()
       if (error) throw error
 
-      const links = [
-        { exercise_id: exercise.id, muscle_group_id: input.primaryGroupId, is_primary: true },
-        ...input.secondaryGroupIds
-          .filter((id) => id !== input.primaryGroupId)
-          .map((id) => ({ exercise_id: exercise.id, muscle_group_id: id, is_primary: false })),
-      ]
+      const links = buildMuscleGroupLinks(
+        exercise.id,
+        input.primaryGroupId,
+        input.secondaryGroupIds,
+      )
 
       const { error: linkError } = await supabase.from('exercise_muscle_groups').insert(links)
       if (linkError) {
