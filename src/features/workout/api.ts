@@ -73,12 +73,17 @@ export function useFinishWorkout() {
 export type LogSetInput = {
   sessionId: string
   exerciseId: string
-  weight: number | null // = template_exercises.weight; null для bodyweight
-  reps: number // = template_exercises.reps_planned
+  weight: number | null // рабочий вес; null для bodyweight
+  reps: number // рабочие повторы
+  // Ссылка на план — для ratchet write-back. Нет для внепланового упражнения.
+  templateId?: string
+  templateExerciseId?: string
+  isBodyweight?: boolean
 }
 
-// Тап «+» = подход по плану. set_number считаем от текущего максимума этого
-// упражнения в сессии (устойчиво к отменам). Пишем сразу — при ошибке она всплывёт.
+// Тап «+» = подход по текущему рабочему значению. set_number считаем от текущего
+// максимума этого упражнения в сессии (устойчиво к отменам). Пишем сразу — при
+// ошибке она всплывёт. После вставки — ratchet write-back в план (только вверх).
 export function useLogSet() {
   const qc = useQueryClient()
   return useMutation({
@@ -102,9 +107,94 @@ export function useLogSet() {
         reps: input.reps,
       })
       if (error) throw error
+
+      // Ratchet (правило 4): план двигается только вверх. Условие проверяет БД
+      // фильтром .lt(...) — атомарно, без гонки от кэша; при снижении строк не
+      // затронуто ни одной. Внеплановое упражнение (нет templateExerciseId)
+      // план не трогает.
+      if (input.templateExerciseId === undefined) return
+
+      if (input.isBodyweight) {
+        const { error: upErr } = await supabase
+          .from('template_exercises')
+          .update({ reps_planned: input.reps })
+          .eq('id', input.templateExerciseId)
+          .lt('reps_planned', input.reps)
+        if (upErr) throw upErr
+      } else if (input.weight !== null) {
+        const { error: upErr } = await supabase
+          .from('template_exercises')
+          .update({ weight: input.weight })
+          .eq('id', input.templateExerciseId)
+          .lt('weight', input.weight)
+        if (upErr) throw upErr
+      }
     },
-    onSuccess: (_data, input) =>
-      qc.invalidateQueries({ queryKey: ['sets', input.sessionId] }),
+    onSuccess: (_data, input) => {
+      qc.invalidateQueries({ queryKey: ['sets', input.sessionId] })
+      if (input.templateId !== undefined) {
+        qc.invalidateQueries({ queryKey: ['day_template', input.templateId] })
+      }
+    },
+  })
+}
+
+export type UpdateSetInput = {
+  sessionId: string
+  setId: string
+  weight?: number | null
+  reps?: number
+}
+
+// Точечная коррекция подхода: UPDATE одной строки sets (правка факта, план не
+// двигает — правило 3). Инвалидируем sets сессии.
+export function useUpdateSet() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: UpdateSetInput) => {
+      const update: Database['public']['Tables']['sets']['Update'] = {}
+      if (input.weight !== undefined) update.weight = input.weight
+      if (input.reps !== undefined) update.reps = input.reps
+      const { error } = await supabase.from('sets').update(update).eq('id', input.setId)
+      if (error) throw error
+    },
+    onSuccess: (_data, input) => qc.invalidateQueries({ queryKey: ['sets', input.sessionId] }),
+  })
+}
+
+export type PrevSetsMap = Record<string, SetRow[]>
+
+// «Что было в прошлый раз» (DATA-MODEL мех. 2): последняя завершённая сессия того
+// же дня до текущей + её подходы, сгруппированные по exercise_id (по set_number).
+export function usePreviousSessionSets(templateId: string, currentSessionId: string) {
+  return useQuery({
+    queryKey: ['prev_sets', templateId],
+    queryFn: async (): Promise<PrevSetsMap> => {
+      const { data: prevSession, error: sErr } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('template_id', templateId)
+        .not('finished_at', 'is', null)
+        .neq('id', currentSessionId)
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (sErr) throw sErr
+      if (!prevSession) return {}
+
+      const { data: prevSets, error: setsErr } = await supabase
+        .from('sets')
+        .select('*')
+        .eq('session_id', prevSession.id)
+        .order('set_number', { ascending: true })
+      if (setsErr) throw setsErr
+
+      const map: PrevSetsMap = {}
+      for (const s of prevSets) {
+        ;(map[s.exercise_id] ??= []).push(s)
+      }
+      return map
+    },
   })
 }
 
