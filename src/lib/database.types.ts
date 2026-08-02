@@ -94,6 +94,75 @@ export type Database = {
           },
         ]
       }
+      day_templates: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          is_archived: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          name: string
+          is_archived?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          is_archived?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      template_exercises: {
+        Row: {
+          id: string
+          template_id: string
+          exercise_id: string
+          position: number
+          sets_planned: number
+          reps_planned: number
+          weight: number | null
+        }
+        Insert: {
+          id?: string
+          template_id: string
+          exercise_id: string
+          position: number
+          sets_planned: number
+          reps_planned: number
+          weight?: number | null
+        }
+        Update: {
+          id?: string
+          template_id?: string
+          exercise_id?: string
+          position?: number
+          sets_planned?: number
+          reps_planned?: number
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'template_exercises_template_id_fkey'
+            columns: ['template_id']
+            isOneToOne: false
+            referencedRelation: 'day_templates'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'template_exercises_exercise_id_fkey'
+            columns: ['exercise_id']
+            isOneToOne: false
+            referencedRelation: 'exercises'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: { [_ in never]: never }
     Functions: { [_ in never]: never }

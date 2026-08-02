@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { supabase } from './lib/supabase'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
+import { DaysScreen } from './features/days/DaysScreen'
+import { DayEditorScreen } from './features/days/DayEditorScreen'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -25,7 +28,58 @@ function App() {
   // Первый кадр до восстановления сессии — не мигаем экраном логина.
   if (loading) return null
 
-  return session ? <ExercisesScreen session={session} /> : <Login />
+  if (!session) return <Login />
+
+  return (
+    <Routes>
+      <Route element={<Layout email={session.user.email ?? ''} />}>
+        <Route index element={<Navigate to="/days" replace />} />
+        <Route path="days" element={<DaysScreen />} />
+        <Route path="days/:id" element={<DayEditorScreen />} />
+        <Route path="exercises" element={<ExercisesScreen />} />
+        <Route path="*" element={<Navigate to="/days" replace />} />
+      </Route>
+    </Routes>
+  )
+}
+
+function Layout({ email }: { email: string }) {
+  return (
+    <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col">
+      <header className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
+        <p className="min-w-0 truncate text-xs text-muted">{email}</p>
+        <button
+          onClick={() => void supabase.auth.signOut()}
+          className="min-h-[44px] shrink-0 px-2 text-sm text-muted underline"
+        >
+          Выйти
+        </button>
+      </header>
+
+      <main className="flex-1 px-4 pb-4">
+        <Outlet />
+      </main>
+
+      <nav className="sticky bottom-0 flex border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <TabLink to="/days" label="Дни" />
+        <TabLink to="/exercises" label="Упражнения" />
+      </nav>
+    </div>
+  )
+}
+
+function TabLink({ to, label }: { to: string; label: string }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        'flex min-h-[52px] flex-1 items-center justify-center text-sm font-semibold ' +
+        (isActive ? 'text-brand' : 'text-muted')
+      }
+    >
+      {label}
+    </NavLink>
+  )
 }
 
 function Login() {

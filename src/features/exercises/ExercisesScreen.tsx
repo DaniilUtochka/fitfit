@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import type { Session } from '@supabase/supabase-js'
-import { supabase } from '../../lib/supabase'
 import {
   useArchiveExercise,
   useCreateExercise,
@@ -9,25 +7,14 @@ import {
   type ExerciseWithGroups,
 } from './api'
 
-export function ExercisesScreen({ session }: { session: Session }) {
+export function ExercisesScreen() {
   const [showArchived, setShowArchived] = useState(false)
   const muscleGroups = useMuscleGroups()
   const exercises = useExercises(showArchived)
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-      <header className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-strong">Упражнения</h1>
-          <p className="text-xs text-muted">{session.user.email}</p>
-        </div>
-        <button
-          onClick={() => void supabase.auth.signOut()}
-          className="min-h-[44px] px-2 text-sm text-muted underline"
-        >
-          Выйти
-        </button>
-      </header>
+    <div className="flex flex-col">
+      <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">Упражнения</h1>
 
       <AddExerciseForm groups={muscleGroups.data ?? []} />
 
