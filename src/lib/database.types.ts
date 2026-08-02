@@ -163,6 +163,83 @@ export type Database = {
           },
         ]
       }
+      sessions: {
+        Row: {
+          id: string
+          user_id: string
+          template_id: string
+          started_at: string
+          finished_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          template_id: string
+          started_at?: string
+          finished_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          template_id?: string
+          started_at?: string
+          finished_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'sessions_template_id_fkey'
+            columns: ['template_id']
+            isOneToOne: false
+            referencedRelation: 'day_templates'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      sets: {
+        Row: {
+          id: string
+          session_id: string
+          exercise_id: string
+          set_number: number
+          weight: number | null
+          reps: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          exercise_id: string
+          set_number: number
+          weight?: number | null
+          reps: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          exercise_id?: string
+          set_number?: number
+          weight?: number | null
+          reps?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'sets_session_id_fkey'
+            columns: ['session_id']
+            isOneToOne: false
+            referencedRelation: 'sessions'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'sets_exercise_id_fkey'
+            columns: ['exercise_id']
+            isOneToOne: false
+            referencedRelation: 'exercises'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: { [_ in never]: never }
     Functions: { [_ in never]: never }

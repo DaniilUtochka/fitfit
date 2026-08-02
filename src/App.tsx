@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
+import { WorkoutScreen } from './features/workout/WorkoutScreen'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -33,11 +34,12 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout email={session.user.email ?? ''} />}>
-        <Route index element={<Navigate to="/days" replace />} />
+        <Route index element={<Navigate to="/workout" replace />} />
+        <Route path="workout" element={<WorkoutScreen />} />
         <Route path="days" element={<DaysScreen />} />
         <Route path="days/:id" element={<DayEditorScreen />} />
         <Route path="exercises" element={<ExercisesScreen />} />
-        <Route path="*" element={<Navigate to="/days" replace />} />
+        <Route path="*" element={<Navigate to="/workout" replace />} />
       </Route>
     </Routes>
   )
@@ -61,6 +63,7 @@ function Layout({ email }: { email: string }) {
       </main>
 
       <nav className="sticky bottom-0 flex border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <TabLink to="/workout" label="Тренировка" />
         <TabLink to="/days" label="Дни" />
         <TabLink to="/exercises" label="Упражнения" />
       </nav>
