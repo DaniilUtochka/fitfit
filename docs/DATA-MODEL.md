@@ -62,6 +62,8 @@ sessions      1──n sets n──1 exercises
 - unique (template_id, exercise_id)
 - CHECK (weight is null or weight > 0)
 
+Текущий план Push/Pull/Legs заполнен разовым импортом из Google-таблицы (слайс 7) - детали и хвосты в IMPORT.md.
+
 `weight` - живое поле: при создании = стартовый вес; поднял рабочий вес на тренировке → автоматом write-back вверх (ratchet, правило 4); деволоад - ручная правка сюда же. Историю прошлых весов не хранит - она в sets. Согласованность «bodyweight ↔ weight is null» держит логика приложения (без кросс-табличного триггера в v1).
 
 ### schedule - расписание
