@@ -38,3 +38,6 @@ supabase/.branches
 *.njsproj
 *.sln
 *.sw?
+
+# worktree субагентов
+.claude/worktrees/

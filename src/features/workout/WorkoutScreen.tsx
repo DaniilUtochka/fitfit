@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useDayTemplate, useDayTemplates } from '../days/api'
 import { useExercises } from '../exercises/api'
+import { Cat, Paw } from '../../components/cat'
 import {
   useActiveSession,
   useFinishWorkout,
@@ -33,7 +34,14 @@ export function WorkoutScreen() {
 }
 
 function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
-  return <p className={danger ? 'text-danger' : 'text-muted'}>{text}</p>
+  return danger ? (
+    <p className="text-danger">{text}</p>
+  ) : (
+    <div className="flex flex-col items-center gap-2 py-8">
+      <Cat mood="sleepy" size={72} />
+      <p className="font-bold text-muted">{text}</p>
+    </div>
+  )
 }
 
 // ── Нет активной тренировки: выбор дня ────────────────────────────────────────────────
@@ -43,26 +51,32 @@ function DayChooser() {
 
   return (
     <div className="flex flex-col">
-      <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">Тренировка</h1>
-      <h2 className="mt-2 mb-2 text-sm font-semibold text-muted uppercase">Выбери день</h2>
+      <h1 className="font-display mb-4 text-3xl font-extrabold tracking-tight text-ink-strong">
+        Тренировка
+      </h1>
+      <h2 className="mt-2 mb-2 text-sm font-bold text-muted uppercase">Выбери день</h2>
 
       {days.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <CenterMsg text="Загрузка…" />
       ) : days.isError ? (
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
-        <p className="text-muted">Нет дней. Собери день во вкладке «Дни».</p>
+        <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
+          <Cat mood="sleepy" size={80} />
+          <p className="font-bold text-ink">Дней пока нет</p>
+          <p className="text-sm text-muted">Собери первый день в разделе «Дни»</p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2.5">
           {days.data.map((day) => (
             <li key={day.id}>
               <button
                 onClick={() => start.mutate(day.id)}
                 disabled={start.isPending}
-                className="flex min-h-[56px] w-full items-center justify-between rounded-2xl border border-border bg-surface px-4 text-left disabled:opacity-50"
+                className="card-shadow flex min-h-[60px] w-full items-center justify-between rounded-2xl bg-surface px-4 text-left transition-transform active:scale-[0.98] disabled:opacity-50"
               >
-                <span className="font-semibold text-ink-strong">{day.name}</span>
-                <span className="text-sm text-brand">Начать →</span>
+                <span className="font-bold text-ink-strong">{day.name}</span>
+                <span className="text-sm font-extrabold text-brand">Начать →</span>
               </button>
             </li>
           ))}
@@ -76,24 +90,40 @@ function DayChooser() {
 
 // ── Экран резюме ──────────────────────────────────────────────────────────────────────
 function SummaryScreen({ summary, onDone }: { summary: WorkoutSummary; onDone: () => void }) {
+  const allDone = summary.doneSets >= summary.plannedSets
   return (
     <div className="flex flex-col">
-      <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">Тренировка завершена</h1>
+      <Cat mood="happy" size={120} />
+      <h1 className="font-display mt-1 mb-4 text-center text-2xl font-extrabold tracking-tight text-ink-strong">
+        Тренировка завершена
+      </h1>
       <div className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between rounded-2xl border border-border bg-surface p-4">
-          <span className="text-muted">Тоннаж</span>
-          <span className="text-xl font-bold text-ink-strong">{summary.tonnage} кг</span>
+        {/* «Паспарту»: белая карточка + цветная панель внутри (docs/DESIGN.md) */}
+        <div className="card-shadow rounded-2xl bg-surface p-2.5">
+          <div className="flex items-baseline justify-between rounded-[16px] bg-lilac p-4">
+            <span className="font-bold text-ink-2">Тоннаж</span>
+            <span className="font-display tabular text-xl font-extrabold text-ink-strong">
+              {summary.tonnage} кг
+            </span>
+          </div>
         </div>
-        <div className="flex items-baseline justify-between rounded-2xl border border-border bg-surface p-4">
-          <span className="text-muted">Выполнено из плана</span>
-          <span className="text-xl font-bold text-ink-strong">
-            {summary.doneSets} / {summary.plannedSets}
-          </span>
+        <div className="card-shadow rounded-2xl bg-surface p-2.5">
+          <div className="flex items-baseline justify-between rounded-[16px] bg-mint p-4">
+            <span className="font-bold text-ink-2">Выполнено из плана</span>
+            <span
+              className={`font-display tabular flex items-center gap-1.5 text-xl font-extrabold ${
+                allDone ? 'text-success' : 'text-ink-strong'
+              }`}
+            >
+              {allDone && <Paw size={18} className="text-success" />}
+              {summary.doneSets} / {summary.plannedSets}
+            </span>
+          </div>
         </div>
       </div>
       <button
         onClick={onDone}
-        className="mt-6 min-h-[44px] rounded-xl bg-brand px-4 font-semibold text-white"
+        className="mt-6 min-h-[48px] rounded-xl bg-brand px-4 text-[17px] font-extrabold text-white transition-transform active:scale-[0.98]"
       >
         Готово
       </button>
@@ -128,7 +158,7 @@ function ActiveWorkout({
   return (
     <div className="flex flex-col">
       <header className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="min-w-0 truncate text-2xl font-bold tracking-tight text-ink-strong">
+        <h1 className="font-display min-w-0 truncate text-2xl font-extrabold tracking-tight text-ink-strong">
           {dayName}
         </h1>
         {confirming ? (
@@ -136,7 +166,7 @@ function ActiveWorkout({
             <button
               onClick={handleFinish}
               disabled={finish.isPending}
-              className="min-h-[44px] rounded-xl bg-brand px-3 text-sm font-semibold text-white disabled:opacity-50"
+              className="min-h-[44px] rounded-xl bg-brand px-3 text-sm font-extrabold text-white disabled:opacity-50"
             >
               Точно завершить?
             </button>
@@ -150,7 +180,7 @@ function ActiveWorkout({
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="min-h-[44px] shrink-0 rounded-xl border border-border px-3 text-sm text-ink"
+            className="min-h-[44px] shrink-0 rounded-xl border-2 border-border bg-surface px-3 text-sm font-bold text-ink"
           >
             Завершить
           </button>
@@ -162,7 +192,7 @@ function ActiveWorkout({
       )}
 
       {plan.isPending || sets.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <CenterMsg text="Загрузка…" />
       ) : plan.isError ? (
         <p className="text-danger">Ошибка: {(plan.error as Error).message}</p>
       ) : sets.isError ? (
@@ -327,18 +357,24 @@ function ExerciseCardBody(props: {
     }
   }
 
+  const planDone = props.setsPlanned !== null && done >= props.setsPlanned
+
   return (
     <li
-      className={`flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 ${
+      className={`card-shadow flex flex-col gap-3 rounded-2xl bg-surface p-4 ${
         skipped ? 'opacity-50' : ''
       }`}
     >
       <div className="flex items-baseline justify-between gap-2">
-        <span className="min-w-0 truncate font-semibold text-ink-strong">{props.name}</span>
-        <span className="shrink-0 text-sm text-muted">{props.planText}</span>
+        <span className="min-w-0 truncate font-bold text-ink-strong">{props.name}</span>
+        <span className="tabular shrink-0 rounded-full bg-lilac px-2.5 py-1 text-xs font-extrabold text-ink">
+          {props.planText}
+        </span>
       </div>
 
-      <p className="text-xs text-muted">Прошлый раз: {prevText}</p>
+      <p className="border-t-2 border-dashed border-line-2 pt-2 text-xs text-muted">
+        Прошлый раз: {prevText}
+      </p>
 
       {/* Рабочее значение: степпер. Правка не пишет в базу — влияет на следующий «+». */}
       <div className="flex items-center gap-2">
@@ -349,11 +385,11 @@ function ExerciseCardBody(props: {
               ? setWorkReps((r) => Math.max(1, r - 1))
               : setWorkWeight((w) => Math.max(2.5, w - 2.5))
           }
-          className="grid min-h-[44px] w-12 place-items-center rounded-xl border border-border text-xl text-ink"
+          className="grid min-h-[44px] w-12 place-items-center rounded-xl border-2 border-border bg-surface text-xl text-ink active:bg-paper"
         >
           −
         </button>
-        <span className="flex-1 text-center text-lg font-semibold text-ink-strong">
+        <span className="font-display tabular flex-1 text-center text-lg font-extrabold text-ink-strong">
           {props.isBodyweight ? `${workReps} повт.` : `${workWeight} кг`}
         </span>
         <button
@@ -363,7 +399,7 @@ function ExerciseCardBody(props: {
               ? setWorkReps((r) => r + 1)
               : setWorkWeight((w) => w + 2.5)
           }
-          className="grid min-h-[44px] w-12 place-items-center rounded-xl border border-border text-xl text-ink"
+          className="grid min-h-[44px] w-12 place-items-center rounded-xl border-2 border-border bg-surface text-xl text-ink active:bg-paper"
         >
           +
         </button>
@@ -384,7 +420,12 @@ function ExerciseCardBody(props: {
       )}
 
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-muted">
+        <span
+          className={`tabular flex items-center gap-1 text-sm font-bold ${
+            planDone ? 'text-success' : 'text-muted'
+          }`}
+        >
+          {planDone && <Paw size={13} />}
           {props.setsPlanned !== null ? `${done}/${props.setsPlanned}` : `${done} подх.`}
         </span>
         <button
@@ -400,7 +441,7 @@ function ExerciseCardBody(props: {
           aria-label="Отменить подход"
           onClick={() => undoSet.mutate({ sessionId: props.sessionId, exerciseId: props.exerciseId })}
           disabled={busy || done === 0}
-          className="grid min-h-[44px] flex-1 place-items-center rounded-xl border border-border text-2xl text-ink disabled:opacity-30"
+          className="grid min-h-[48px] flex-1 place-items-center rounded-xl border-2 border-border bg-surface text-2xl text-ink disabled:opacity-30"
         >
           −
         </button>
@@ -408,9 +449,10 @@ function ExerciseCardBody(props: {
           aria-label="Отметить подход"
           onClick={logWorking}
           disabled={busy}
-          className="grid min-h-[44px] flex-[2] place-items-center rounded-xl bg-brand text-lg font-semibold text-white disabled:opacity-50"
+          className="flex min-h-[48px] flex-[2] items-center justify-center gap-2 rounded-xl bg-brand text-lg font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
         >
-          + подход
+          <Paw size={18} className="text-white" />
+          подход
         </button>
       </div>
 
@@ -440,10 +482,10 @@ function SetRowEditable({
       <li>
         <button
           onClick={() => setEditing(true)}
-          className="flex min-h-[44px] w-full items-center justify-between rounded-xl border border-border bg-bg px-3 text-left"
+          className="tabular flex min-h-[44px] w-full items-center justify-between rounded-xl bg-paper px-3 text-left"
         >
           <span className="text-xs text-muted">№{set.set_number}</span>
-          <span className="font-mono text-ink-strong">{label}</span>
+          <span className="font-bold text-ink-strong">{label}</span>
         </button>
         {update.isError && (
           <p className="text-xs text-danger">{(update.error as Error).message}</p>
@@ -471,7 +513,7 @@ function SetRowEditable({
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setEditing(false)
         }}
-        className="flex min-h-[44px] items-center gap-2 rounded-xl border border-brand bg-bg px-3"
+        className="tabular flex min-h-[44px] items-center gap-2 rounded-xl border-2 border-brand bg-paper px-3"
       >
         <span className="text-xs text-muted">№{set.set_number}</span>
         {!isBodyweight && (
@@ -482,7 +524,7 @@ function SetRowEditable({
             defaultValue={set.weight ?? ''}
             onBlur={(e) => saveWeight(e.target.value)}
             aria-label="Вес"
-            className="min-h-[44px] w-16 rounded-lg border border-border bg-surface px-2 text-center text-ink-strong"
+            className="min-h-[44px] w-16 rounded-lg border border-border bg-surface px-2 text-center font-bold text-ink-strong"
           />
         )}
         <span className="text-muted">×</span>
@@ -493,7 +535,7 @@ function SetRowEditable({
           defaultValue={set.reps}
           onBlur={(e) => saveReps(e.target.value)}
           aria-label="Повторы"
-          className="min-h-[44px] w-14 rounded-lg border border-border bg-surface px-2 text-center text-ink-strong"
+          className="min-h-[44px] w-14 rounded-lg border border-border bg-surface px-2 text-center font-bold text-ink-strong"
         />
       </div>
     </li>
@@ -515,7 +557,7 @@ function AddExerciseSection({
 
   return (
     <section className="mt-4">
-      <h2 className="mb-2 text-sm font-semibold text-muted uppercase">Добавить упражнение</h2>
+      <h2 className="mb-2 text-sm font-bold text-muted uppercase">Добавить упражнение</h2>
       {ex.isPending ? (
         <p className="text-muted">Загрузка…</p>
       ) : ex.isError ? (
@@ -527,7 +569,7 @@ function AddExerciseSection({
           <select
             value={picked}
             onChange={(e) => setPicked(e.target.value)}
-            className="min-h-[44px] flex-1 rounded-xl border border-border bg-surface px-3 text-ink-strong"
+            className="min-h-[44px] flex-1 rounded-xl border-2 border-border bg-surface px-3 text-ink-strong"
           >
             <option value="">Выбери упражнение…</option>
             {options.map((e) => (
@@ -543,7 +585,7 @@ function AddExerciseSection({
               setPicked('')
             }}
             disabled={!picked}
-            className="min-h-[44px] rounded-xl bg-brand px-4 font-semibold text-white disabled:opacity-40"
+            className="min-h-[44px] rounded-xl bg-brand px-4 font-extrabold text-white disabled:opacity-40"
           >
             +
           </button>

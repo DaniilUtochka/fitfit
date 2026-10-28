@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { supabase } from './lib/supabase'
+import { Cat, Paw } from './components/cat'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
@@ -64,7 +65,7 @@ function Layout({ email }: { email: string }) {
         <Outlet />
       </main>
 
-      <nav className="sticky bottom-0 flex border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+      <nav className="sticky bottom-0 flex border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_-16px_rgba(42,47,90,0.4)] backdrop-blur">
         <TabLink to="/workout" label="Тренировка" />
         <TabLink to="/days" label="Дни" />
         <TabLink to="/more" label="Ещё" />
@@ -77,12 +78,16 @@ function TabLink({ to, label }: { to: string; label: string }) {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
-        'flex min-h-[52px] flex-1 items-center justify-center text-sm font-semibold ' +
-        (isActive ? 'text-brand' : 'text-muted')
-      }
+      className="flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5"
     >
-      {label}
+      {({ isActive }) => (
+        <>
+          <span className={'text-sm font-bold ' + (isActive ? 'text-brand' : 'text-muted')}>
+            {label}
+          </span>
+          {isActive ? <Paw size={10} /> : <span className="size-[10px]" />}
+        </>
+      )}
     </NavLink>
   )
 }
@@ -108,12 +113,12 @@ function Login() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-2 px-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
       <BrandMark />
-      <h1 className="text-4xl font-bold tracking-tight text-ink-strong">FitFit</h1>
-      <p className="text-muted">Трекер тренировок</p>
+      <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink-strong">FitFit</h1>
+      <p className="font-bold text-muted">Трекер тренировок</p>
       <button
         onClick={signIn}
         disabled={pending}
-        className="mt-6 inline-flex min-h-[52px] items-center gap-3 rounded-2xl bg-white px-6 text-[17px] font-semibold text-[#1f2430] shadow-lg disabled:opacity-60"
+        className="card-shadow mt-6 inline-flex min-h-[52px] items-center gap-3 rounded-2xl bg-surface px-6 text-[17px] font-bold text-ink-strong disabled:opacity-60"
       >
         <GoogleIcon />
         {pending ? 'Открываю Google…' : 'Войти через Google'}
@@ -126,10 +131,10 @@ function Login() {
 function BrandMark() {
   return (
     <div
-      className="mb-4 grid size-[88px] place-items-center rounded-[22px] bg-gradient-to-br from-brand-hi to-brand text-[52px] font-extrabold text-white shadow-[0_10px_30px_-8px_rgba(79,70,229,0.6)]"
+      className="card-shadow mb-4 grid size-[112px] place-items-center rounded-[28px] bg-lilac"
       aria-hidden="true"
     >
-      F
+      <Cat mood="hello" size={92} />
     </div>
   )
 }
