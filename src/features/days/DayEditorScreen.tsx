@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { Cat } from '../../components/cat'
 import { useExercises } from '../exercises/api'
 import {
   useAddTemplateExercise,
@@ -26,12 +27,18 @@ export function DayEditorScreen() {
         <p className="text-danger">Ошибка: {(day.error as Error).message}</p>
       ) : (
         <>
-          <h1 className="mb-4 text-2xl font-bold tracking-tight text-ink-strong">{day.data.name}</h1>
+          <h1 className="font-display mb-4 text-2xl font-extrabold tracking-tight text-ink-strong">
+            {day.data.name}
+          </h1>
 
           {day.data.template_exercises.length === 0 ? (
-            <p className="mb-4 text-muted">Пока пусто. Добавь упражнение ниже.</p>
+            <div className="mb-4 flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
+              <Cat mood="hello" size={80} />
+              <p className="font-bold text-ink">Пока пусто</p>
+              <p className="text-sm text-muted">Добавь упражнение в форме ниже</p>
+            </div>
           ) : (
-            <ul className="mb-6 flex flex-col gap-2">
+            <ul className="mb-6 flex flex-col gap-2.5">
               {day.data.template_exercises.map((te, i) => (
                 <PlanRow
                   key={te.id}
@@ -80,14 +87,16 @@ function PlanRow({
   const isBodyweight = te.exercises?.is_bodyweight ?? te.weight === null
 
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+    <li className="card-shadow flex flex-col gap-3 rounded-2xl bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="font-semibold text-ink-strong">
+          <span className="font-bold text-ink-strong">
             {te.exercises?.name ?? 'Упражнение'}
           </span>
           {isBodyweight && (
-            <span className="rounded-full bg-bg px-2 py-0.5 text-xs text-muted">bodyweight</span>
+            <span className="rounded-full bg-sky px-2 py-0.5 text-xs font-bold text-muted">
+              bodyweight
+            </span>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -102,7 +111,7 @@ function PlanRow({
                 b: { id: prev.id, position: prev.position },
               })
             }
-            className="grid size-11 place-items-center rounded-xl border border-border text-ink disabled:opacity-30"
+            className="grid size-11 place-items-center rounded-xl border-2 border-border bg-surface text-ink disabled:opacity-30"
           >
             ↑
           </button>
@@ -117,7 +126,7 @@ function PlanRow({
                 b: { id: next.id, position: next.position },
               })
             }
-            className="grid size-11 place-items-center rounded-xl border border-border text-ink disabled:opacity-30"
+            className="grid size-11 place-items-center rounded-xl border-2 border-border bg-surface text-ink disabled:opacity-30"
           >
             ↓
           </button>
@@ -183,7 +192,7 @@ function PlanField({
   }
 
   return (
-    <label className="flex w-20 flex-col gap-1 text-xs text-muted">
+    <label className="flex w-20 flex-col gap-1 text-xs font-bold text-muted">
       {label}
       <input
         type="number"
@@ -193,7 +202,7 @@ function PlanField({
         value={text}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}
-        className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-center text-ink"
+        className="tabular min-h-[44px] rounded-xl border-2 border-border bg-paper px-3 text-center font-bold text-ink"
       />
     </label>
   )
@@ -251,14 +260,14 @@ function AddExerciseBlock({
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4"
+      className="card-shadow flex flex-col gap-3 rounded-2xl bg-surface p-4"
     >
-      <h2 className="text-sm font-semibold text-muted uppercase">Добавить упражнение</h2>
+      <h2 className="text-sm font-bold text-muted uppercase">Добавить упражнение</h2>
 
       <select
         value={exerciseId}
         onChange={(e) => setExerciseId(e.target.value)}
-        className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-ink"
+        className="min-h-[44px] rounded-xl border-2 border-border bg-paper px-3 text-ink"
       >
         <option value="">— выбери упражнение —</option>
         {available.map((e) => (
@@ -271,12 +280,12 @@ function AddExerciseBlock({
 
       {available.length === 0 && !exercises.isPending && (
         <p className="text-xs text-muted">
-          Все упражнения уже в дне или справочник пуст — заведи новые во вкладке «Упражнения».
+          Все упражнения уже в дне или справочник пуст — заведи новые в разделе «Ещё».
         </p>
       )}
 
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex w-20 flex-col gap-1 text-xs text-muted">
+        <label className="flex w-20 flex-col gap-1 text-xs font-bold text-muted">
           Подходы
           <input
             type="number"
@@ -284,10 +293,10 @@ function AddExerciseBlock({
             min={1}
             value={sets}
             onChange={(e) => setSets(e.target.value)}
-            className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-center text-ink"
+            className="tabular min-h-[44px] rounded-xl border-2 border-border bg-paper px-3 text-center font-bold text-ink"
           />
         </label>
-        <label className="flex w-20 flex-col gap-1 text-xs text-muted">
+        <label className="flex w-20 flex-col gap-1 text-xs font-bold text-muted">
           Повторы
           <input
             type="number"
@@ -295,11 +304,11 @@ function AddExerciseBlock({
             min={1}
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-center text-ink"
+            className="tabular min-h-[44px] rounded-xl border-2 border-border bg-paper px-3 text-center font-bold text-ink"
           />
         </label>
         {!isBodyweight && (
-          <label className="flex w-20 flex-col gap-1 text-xs text-muted">
+          <label className="flex w-20 flex-col gap-1 text-xs font-bold text-muted">
             Вес, кг
             <input
               type="number"
@@ -308,7 +317,7 @@ function AddExerciseBlock({
               min={0}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              className="min-h-[44px] rounded-xl border border-border bg-bg px-3 text-center text-ink"
+              className="tabular min-h-[44px] rounded-xl border-2 border-border bg-paper px-3 text-center font-bold text-ink"
             />
           </label>
         )}
@@ -319,7 +328,7 @@ function AddExerciseBlock({
       <button
         type="submit"
         disabled={!canSubmit}
-        className="min-h-[48px] rounded-xl bg-brand font-semibold text-white disabled:opacity-50"
+        className="min-h-[48px] rounded-xl bg-brand font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
       >
         {add.isPending ? 'Добавляю…' : 'Добавить в день'}
       </button>
