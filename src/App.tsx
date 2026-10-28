@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
+import { MoreScreen } from './features/more/MoreScreen'
 import { WorkoutScreen } from './features/workout/WorkoutScreen'
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
         <Route path="days" element={<DaysScreen />} />
         <Route path="days/:id" element={<DayEditorScreen />} />
         <Route path="exercises" element={<ExercisesScreen />} />
+        <Route path="more" element={<MoreScreen />} />
         <Route path="*" element={<Navigate to="/workout" replace />} />
       </Route>
     </Routes>
@@ -65,7 +67,7 @@ function Layout({ email }: { email: string }) {
       <nav className="sticky bottom-0 flex border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         <TabLink to="/workout" label="Тренировка" />
         <TabLink to="/days" label="Дни" />
-        <TabLink to="/exercises" label="Упражнения" />
+        <TabLink to="/more" label="Ещё" />
       </nav>
     </div>
   )
