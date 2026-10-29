@@ -53,6 +53,8 @@ function App() {
 }
 
 function Layout({ email }: { email: string }) {
+  const online = useOnlineStatus()
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col">
       <header className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
@@ -65,6 +67,14 @@ function Layout({ email }: { email: string }) {
         </button>
       </header>
 
+      {!online && (
+        <div className="pointer-events-none fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] z-30 flex justify-center px-4">
+          <p className="rounded-full bg-butter px-4 py-2 text-xs font-extrabold text-ink-strong shadow-[0_10px_24px_-16px_rgba(42,47,90,0.35)]">
+            Нет сети — подход может не записаться
+          </p>
+        </div>
+      )}
+
       <main className="flex-1 px-4 pb-4">
         <Outlet />
       </main>
@@ -76,6 +86,23 @@ function Layout({ email }: { email: string }) {
       </nav>
     </div>
   )
+}
+
+function useOnlineStatus() {
+  const [online, setOnline] = useState(() => navigator.onLine)
+
+  useEffect(() => {
+    const goOnline = () => setOnline(true)
+    const goOffline = () => setOnline(false)
+    window.addEventListener('online', goOnline)
+    window.addEventListener('offline', goOffline)
+    return () => {
+      window.removeEventListener('online', goOnline)
+      window.removeEventListener('offline', goOffline)
+    }
+  }, [])
+
+  return online
 }
 
 function TabLink({ to, label }: { to: string; label: string }) {
