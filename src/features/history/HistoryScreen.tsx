@@ -9,8 +9,8 @@ export function HistoryScreen() {
 
   return (
     <div className="flex flex-col">
-      <Link to="/more" className="mb-2 inline-flex min-h-[44px] items-center text-sm text-muted">
-        ← Ещё
+      <Link to="/progress" className="mb-2 inline-flex min-h-[44px] items-center text-sm text-muted">
+        ← Прогресс
       </Link>
       <h1 className="font-display mb-4 text-2xl font-extrabold tracking-tight text-ink-strong">
         История

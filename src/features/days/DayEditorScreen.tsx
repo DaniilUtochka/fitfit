@@ -296,7 +296,7 @@ function AddExerciseBlock({
 
       {available.length === 0 && !exercises.isPending && (
         <p className="text-xs text-muted">
-          Все упражнения уже в дне или справочник пуст — заведи новые в разделе «Ещё».
+          Все упражнения уже в дне или справочник пуст — заведи новые в справочнике упражнений.
         </p>
       )}
 

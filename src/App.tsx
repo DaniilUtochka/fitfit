@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
 import { supabase } from './lib/supabase'
 import { Cat, Paw } from './components/cat'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
-import { MoreScreen } from './features/more/MoreScreen'
 import { HistoryScreen } from './features/history/HistoryScreen'
 import { HistoryDetailScreen } from './features/history/HistoryDetailScreen'
 import { WorkoutScreen } from './features/workout/WorkoutScreen'
@@ -45,7 +44,6 @@ function App() {
         <Route path="days" element={<DaysScreen />} />
         <Route path="days/:id" element={<DayEditorScreen />} />
         <Route path="exercises" element={<ExercisesScreen />} />
-        <Route path="more" element={<MoreScreen />} />
         <Route path="history" element={<HistoryScreen />} />
         <Route path="history/:sessionId" element={<HistoryDetailScreen />} />
         <Route path="*" element={<Navigate to="/workout" replace />} />
@@ -59,34 +57,107 @@ function Layout({ email }: { email: string }) {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col">
-      <header className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
-        <p className="min-w-0 truncate text-xs text-muted">{email}</p>
-        <button
-          onClick={() => void supabase.auth.signOut()}
-          className="min-h-[44px] shrink-0 px-2 text-sm text-muted underline"
-        >
-          Выйти
-        </button>
-      </header>
+      <ProfileMenu email={email} />
 
       {!online && (
-        <div className="pointer-events-none fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] z-30 flex justify-center px-4">
+        <div className="pointer-events-none fixed inset-x-0 top-[calc(4.5rem+env(safe-area-inset-top))] z-30 flex justify-center px-4">
           <p className="rounded-full bg-butter px-4 py-2 text-xs font-extrabold text-ink-strong shadow-[0_10px_24px_-16px_rgba(42,47,90,0.35)]">
             Нет сети — подход может не записаться
           </p>
         </div>
       )}
 
-      <main className="flex-1 px-4 pb-4">
+      <main className="flex-1 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </main>
-
-      <nav className="sticky bottom-0 flex border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_-16px_rgba(42,47,90,0.4)] backdrop-blur">
-        <TabLink to="/workout" label="Тренировка" />
-        <TabLink to="/progress" label="Прогресс" />
-        <TabLink to="/more" label="Ещё" />
-      </nav>
     </div>
+  )
+}
+
+// Плавающая кнопка профиля: кружок-«аватар» с лапкой в правом верхнем углу,
+// по тапу — выпадающая панель с email, навигацией и «Выйти».
+function ProfileMenu({ email }: { email: string }) {
+  const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // Переход по ссылке закрывает панель.
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
+
+  // Тап мимо панели закрывает её.
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [open])
+
+  return (
+    <div
+      ref={rootRef}
+      className="fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-4 z-50 flex flex-col items-end"
+    >
+      <button
+        type="button"
+        aria-label="Профиль"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="card-shadow grid size-11 place-items-center rounded-full bg-surface text-brand"
+      >
+        <Paw size={20} />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="card-shadow mt-2 flex w-[280px] flex-col rounded-2xl bg-surface p-2"
+        >
+          <p className="min-w-0 truncate px-3 py-2 text-sm text-muted">{email}</p>
+          <div className="mx-3 mb-1 border-t-2 border-dashed border-line-2" />
+          <MenuItem to="/workout" label="Тренировка" onNavigate={() => setOpen(false)} />
+          <MenuItem to="/days" label="Дни" onNavigate={() => setOpen(false)} />
+          <MenuItem to="/history" label="История" onNavigate={() => setOpen(false)} />
+          <MenuItem
+            to="/exercises"
+            label="Справочник упражнений"
+            onNavigate={() => setOpen(false)}
+          />
+          <div className="mx-3 border-t-2 border-dashed border-line-2" />
+          <button
+            type="button"
+            onClick={() => void supabase.auth.signOut()}
+            className="mt-1 flex min-h-[44px] items-center px-3 text-left text-sm text-muted underline"
+          >
+            Выйти
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MenuItem({
+  to,
+  label,
+  onNavigate,
+}: {
+  to: string
+  label: string
+  onNavigate: () => void
+}) {
+  return (
+    <Link
+      role="menuitem"
+      to={to}
+      onClick={onNavigate}
+      className="flex min-h-[44px] items-center px-3 font-bold text-ink-strong"
+    >
+      {label}
+    </Link>
   )
 }
 
@@ -105,24 +176,6 @@ function useOnlineStatus() {
   }, [])
 
   return online
-}
-
-function TabLink({ to, label }: { to: string; label: string }) {
-  return (
-    <NavLink
-      to={to}
-      className="flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5"
-    >
-      {({ isActive }) => (
-        <>
-          <span className={'text-sm font-bold ' + (isActive ? 'text-brand' : 'text-muted')}>
-            {label}
-          </span>
-          {isActive ? <Paw size={10} /> : <span className="size-[10px]" />}
-        </>
-      )}
-    </NavLink>
-  )
 }
 
 function Login() {
