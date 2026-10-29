@@ -1,11 +1,11 @@
-import { render, screen, cleanup } from '@testing-library/react'
+import { fireEvent, render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 
-// Мок supabase c переключаемой сессией: без неё — экран логина, с ней — Layout с табами.
-// Цепочка-заглушка под supabase-js query builder: все методы возвращают себя,
-// await цепочки резолвится пустым результатом (пустые данные = пустое состояние).
+// Мок supabase c переключаемой сессией: без неё — экран логина, с ней — Layout
+// с плавающей кнопкой профиля. Цепочка-заглушка под supabase-js query builder:
+// все методы возвращают себя, await цепочки резолвится пустым результатом.
 const mocks = vi.hoisted(() => {
   function chainResult(data: unknown[] = []): Promise<{ data: unknown[]; error: null }> {
     // Методы builder'а навешаны прямо на промис: каждый возвращает тот же
@@ -17,10 +17,11 @@ const mocks = vi.hoisted(() => {
       string,
       () => unknown
     >
-    for (const method of ['select', 'not', 'eq', 'in', 'order', 'limit']) {
+    for (const method of ['select', 'not', 'eq', 'neq', 'in', 'is', 'order', 'limit']) {
       api[method] = () => api
     }
     api.single = () => Promise.resolve({ data: null, error: null })
+    api.maybeSingle = () => Promise.resolve({ data: null, error: null })
     return api
   }
   return { chainResult, session: { current: null as { user: { email: string } } | null } }
@@ -63,33 +64,69 @@ describe('App', () => {
   })
 })
 
-describe('App: навигация слайса 13', () => {
+describe('App: навигация (панель профиля вместо табов)', () => {
   beforeEach(() => {
     mocks.session.current = { user: { email: 'dan@gmail.com' } }
   })
 
   it('«/» — главный экран Прогресс: редирект index-роута на /progress', async () => {
     renderApp('/')
-    expect(await screen.findByText('Тут появятся твои цифры')).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Прогресс' })).toBeTruthy()
-  })
-
-  it('нижнее меню: Тренировка / Прогресс / Ещё, таба «Дни» больше нет', async () => {
-    renderApp('/progress')
-    expect(await screen.findByRole('link', { name: 'Прогресс' })).toBeTruthy()
-    expect(screen.queryByRole('link', { name: 'Дни' })).toBeNull()
     // /progress с пустыми данными — пустое состояние §5
     expect(await screen.findByText('Тут появятся твои цифры')).toBeTruthy()
     // Кнопка старта одна: фиксированная к низу, inline-CTA из пустого состояния убран
     expect(screen.getAllByRole('link', { name: 'Начать тренировку' })).toHaveLength(1)
+    // Кружок профиля виден всегда, панель пока закрыта
+    expect(screen.getByRole('button', { name: 'Профиль' })).toBeTruthy()
+    expect(screen.queryByRole('menu')).toBeNull()
   })
 
-  it('«Ещё»: секции Тренировки (Дни, История) и Справочник', async () => {
+  it('неизвестный роут редиректит на выбор дня (catch-all жив)', async () => {
+    renderApp('/nonsense')
+    expect(await screen.findByText('Выбери день')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Профиль' })).toBeTruthy()
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('удалённый роут /more тоже уходит на catch-all', async () => {
     renderApp('/more')
-    expect(await screen.findByRole('link', { name: /Дни/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /История/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Справочник упражнений/ })).toBeTruthy()
-    expect(screen.getByText('Тренировки')).toBeTruthy()
-    expect(screen.getByText('Справочник')).toBeTruthy()
+    expect(await screen.findByText('Выбери день')).toBeTruthy()
+  })
+
+  it('панель профиля: email, пункты меню, «Выйти»; закрывается повторным тапом', async () => {
+    renderApp('/progress')
+    fireEvent.click(await screen.findByRole('button', { name: 'Профиль' }))
+
+    expect(screen.getByRole('menu')).toBeTruthy()
+    expect(screen.getByText('dan@gmail.com')).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Тренировка' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Дни' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'История' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Справочник упражнений' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Выйти' })).toBeTruthy()
+
+    // Повторный тап по кружку закрывает панель
+    fireEvent.click(screen.getByRole('button', { name: 'Профиль' }))
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('тап мимо панели закрывает её', async () => {
+    renderApp('/progress')
+    fireEvent.click(await screen.findByRole('button', { name: 'Профиль' }))
+    expect(screen.getByRole('menu')).toBeTruthy()
+
+    const outside = document.createElement('div')
+    document.body.appendChild(outside)
+    fireEvent.pointerDown(outside)
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('переход по ссылке из панели: навигация и закрытие', async () => {
+    renderApp('/progress')
+    fireEvent.click(await screen.findByRole('button', { name: 'Профиль' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Дни' }))
+
+    // Панель закрылась, попали на экран «Дни»
+    expect(await screen.findByRole('heading', { name: 'Дни' })).toBeTruthy()
+    expect(screen.queryByRole('menu')).toBeNull()
   })
 })

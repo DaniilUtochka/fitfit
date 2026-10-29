@@ -221,7 +221,8 @@ function ActiveWorkout({
   return (
     <div className={`flex flex-col ${rest.endsAt !== null ? 'pb-24' : 'pb-2'}`}>
       <header className="mb-3 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-3">
+        {/* pr-14: не заезжать под плавающий кружок профиля в правом верхнем углу */}
+        <div className="flex items-center justify-between gap-3 pr-14">
           <h1 className="font-display min-w-0 truncate text-2xl font-extrabold tracking-tight text-ink-strong">
             {dayName}
           </h1>
