@@ -17,6 +17,7 @@ npm run dev            # локально
 npm run build          # прод-сборка (tsc + vite)
 npm run preview        # проверка прод-сборки
 npm run lint           # oxlint
+npm run generate:splash # перегенерировать iOS-сплеши в public/ (scripts/generate-splash.mjs)
 npx supabase migration new <name>   # новая миграция
 npx supabase db push                # применить миграции к проекту
 ```
