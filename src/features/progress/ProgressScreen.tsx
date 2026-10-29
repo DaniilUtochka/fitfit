@@ -28,20 +28,21 @@ import {
 
 // Прогресс (слайс 13): мотивирующие цифры по docs/PROGRESS-UX.md.
 // Экран read-only: TanStack Query отдаёт кэш офлайн, ничего дополнительно не придумываем.
+// Прогресс — главный экран: снизу всегда прибита кнопка «Начать тренировку»,
+// контент подстраивается паддингом, чтобы кнопка ничего не перекрывала.
 export function ProgressScreen() {
   const query = useProgressData()
 
+  let body: React.ReactNode
   if (query.isPending) {
-    return (
+    body = (
       <StatePanel>
         <Cat mood="sleepy" size={80} />
         <p className="font-bold text-muted">Считаю твой прогресс…</p>
       </StatePanel>
     )
-  }
-
-  if (query.isError) {
-    return (
+  } else if (query.isError) {
+    body = (
       <StatePanel>
         <Cat mood="sleepy" size={80} />
         <p className="font-bold text-ink">Не смог посчитать прогресс</p>
@@ -53,12 +54,33 @@ export function ProgressScreen() {
         </button>
       </StatePanel>
     )
+  } else if (query.data.sessions.length === 0) {
+    body = <EmptyState />
+  } else {
+    body = <FullProgress data={query.data} now={new Date()} />
   }
 
-  const data = query.data
-  if (data.sessions.length === 0) return <EmptyState />
+  return (
+    <>
+      {/* 56px кнопка + воздух: паддинг живёт на контенте, кнопка фиксирована на safe-area */}
+      <div className="pb-[calc(env(safe-area-inset-bottom)+4.5rem)]">{body}</div>
+      <StartWorkoutButton />
+    </>
+  )
+}
 
-  return <FullProgress data={data} now={new Date()} />
+// Большая кнопка старта: fixed к низу, поверх контента, тап ведёт на /workout —
+// там уже решается «выбор дня или активная тренировка».
+function StartWorkoutButton() {
+  return (
+    <Link
+      to="/workout"
+      className="card-shadow fixed inset-x-0 bottom-[env(safe-area-inset-bottom)] z-40 mx-auto flex min-h-[56px] w-[min(calc(100%-2rem),27.5rem)] items-center justify-center gap-2 rounded-xl bg-brand text-lg font-extrabold text-white transition-transform active:scale-[0.98]"
+    >
+      <Paw size={22} />
+      Начать тренировку
+    </Link>
+  )
 }
 
 function StatePanel({ children }: { children: React.ReactNode }) {
@@ -75,6 +97,7 @@ function StatePanel({ children }: { children: React.ReactNode }) {
 }
 
 // Пустое состояние (§5): нули не показываем — приглашение начать.
+// CTA не дублируем: большая кнопка «Начать тренировку» уже прибита к низу экрана.
 function EmptyState() {
   return (
     <div className="flex flex-col">
@@ -89,12 +112,6 @@ function EmptyState() {
           <br />
           Для начала — одна тренировка.
         </p>
-        <Link
-          to="/workout"
-          className="mt-4 inline-flex min-h-[48px] items-center justify-center rounded-xl bg-brand px-6 text-[17px] font-extrabold text-white transition-transform active:scale-[0.98]"
-        >
-          Начать тренировку
-        </Link>
       </div>
     </div>
   )

@@ -39,7 +39,7 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout email={session.user.email ?? ''} />}>
-        <Route index element={<Navigate to="/workout" replace />} />
+        <Route index element={<Navigate to="/progress" replace />} />
         <Route path="workout" element={<WorkoutScreen />} />
         <Route path="progress" element={<ProgressScreen />} />
         <Route path="days" element={<DaysScreen />} />
