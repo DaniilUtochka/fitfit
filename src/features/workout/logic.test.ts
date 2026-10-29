@@ -3,9 +3,34 @@ import {
   progressFor,
   ratchetUp,
   computeSummary,
+  cancelAllowed,
   workingWeightFor,
   workingRepsFor,
 } from './logic'
+
+describe('cancelAllowed', () => {
+  it('0 подходов — отменить можно', () => {
+    expect(cancelAllowed(0, 21)).toBe(true)
+  })
+
+  it('меньше 20% — можно (1 из 6 ≈ 17%)', () => {
+    expect(cancelAllowed(1, 6)).toBe(true)
+  })
+
+  it('ровно 20% — нельзя (1 из 5)', () => {
+    expect(cancelAllowed(1, 5)).toBe(false)
+  })
+
+  it('больше 20% — нельзя', () => {
+    expect(cancelAllowed(5, 21)).toBe(false)
+    expect(cancelAllowed(21, 21)).toBe(false)
+  })
+
+  it('пустой план — отменить можно всегда', () => {
+    expect(cancelAllowed(0, 0)).toBe(true)
+    expect(cancelAllowed(3, 0)).toBe(true)
+  })
+})
 
 describe('progressFor', () => {
   it('пустой список → 0 сделано, следующий подход №1', () => {

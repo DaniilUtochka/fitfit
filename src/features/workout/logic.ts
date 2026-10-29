@@ -62,6 +62,14 @@ export function computeSummary(
   return { tonnage, doneSets, plannedSets }
 }
 
+// Отмена тренировки (слайс 12): разрешена, пока выполнено < 20% плана.
+// Пустой план (plannedSets = 0) — отменить можно всегда: делать нечего, сессия пустая.
+// Граница 20% ровно = отмена запрещена (например, 1 подход из 5).
+export function cancelAllowed(doneSets: number, plannedSets: number): boolean {
+  if (plannedSets === 0) return true
+  return doneSets / plannedSets < 0.2
+}
+
 export type SetValueLike = {
   exercise_id: string
   set_number: number

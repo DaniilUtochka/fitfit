@@ -70,6 +70,20 @@ export function useFinishWorkout() {
   })
 }
 
+// Отмена тренировки (слайс 12): удаление незавершённой сессии. Подходы уходят
+// каскадом (FK sets.session_id on delete cascade) — история такой сессии чистая.
+// Ratchet write-back от отменённых подходов план не откатываем.
+export function useCancelWorkout() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase.from('sessions').delete().eq('id', sessionId)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['active_session'] }),
+  })
+}
+
 export type LogSetInput = {
   sessionId: string
   exerciseId: string
