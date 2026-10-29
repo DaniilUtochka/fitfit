@@ -68,13 +68,20 @@ describe('App: навигация слайса 13', () => {
     mocks.session.current = { user: { email: 'dan@gmail.com' } }
   })
 
+  it('«/» — главный экран Прогресс: редирект index-роута на /progress', async () => {
+    renderApp('/')
+    expect(await screen.findByText('Тут появятся твои цифры')).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Прогресс' })).toBeTruthy()
+  })
+
   it('нижнее меню: Тренировка / Прогресс / Ещё, таба «Дни» больше нет', async () => {
     renderApp('/progress')
     expect(await screen.findByRole('link', { name: 'Прогресс' })).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Дни' })).toBeNull()
     // /progress с пустыми данными — пустое состояние §5
     expect(await screen.findByText('Тут появятся твои цифры')).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Начать тренировку' })).toBeTruthy()
+    // Кнопка старта одна: фиксированная к низу, inline-CTA из пустого состояния убран
+    expect(screen.getAllByRole('link', { name: 'Начать тренировку' })).toHaveLength(1)
   })
 
   it('«Ещё»: секции Тренировки (Дни, История) и Справочник', async () => {
