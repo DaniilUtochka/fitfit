@@ -10,10 +10,14 @@ import {
   useUpdateTemplateExercisePlan,
   type TemplateExerciseWithExercise,
 } from './api'
+import { useRecentResults } from '../history/api'
 
 export function DayEditorScreen() {
   const { id } = useParams<{ id: string }>()
   const day = useDayTemplate(id ?? '')
+  // «Последние результаты» по каждому упражнению (слайс 9): до 3 завершённых
+  // сессий этого дня. Активная сессия не считается (finished_at not null).
+  const recent = useRecentResults(day.data?.id ?? '')
 
   return (
     <div className="flex flex-col">
@@ -44,6 +48,7 @@ export function DayEditorScreen() {
                   key={te.id}
                   te={te}
                   templateId={day.data.id}
+                  recentResults={recent.data?.[te.exercise_id]}
                   isFirst={i === 0}
                   isLast={i === day.data.template_exercises.length - 1}
                   prev={day.data.template_exercises[i - 1]}
@@ -69,6 +74,7 @@ export function DayEditorScreen() {
 function PlanRow({
   te,
   templateId,
+  recentResults,
   isFirst,
   isLast,
   prev,
@@ -76,6 +82,8 @@ function PlanRow({
 }: {
   te: TemplateExerciseWithExercise
   templateId: string
+  // Строки «Последние» для этого упражнения; undefined = истории нет — строку не рисуем.
+  recentResults?: string[]
   isFirst: boolean
   isLast: boolean
   prev?: TemplateExerciseWithExercise
@@ -132,6 +140,13 @@ function PlanRow({
           </button>
         </div>
       </div>
+
+      {recentResults && recentResults.length > 0 && (
+        <p className="border-t-2 border-dashed border-line-2 pt-2 text-xs font-bold text-muted">
+          Последние:{' '}
+          <span className="tabular text-ink">{recentResults.join(', ')}</span>
+        </p>
+      )}
 
       <div className="flex flex-wrap items-end gap-3">
         <PlanField
