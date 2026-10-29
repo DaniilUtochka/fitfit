@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDayTemplate, useDayTemplates } from '../days/api'
 import { useExercises } from '../exercises/api'
 import { Cat, Paw } from '../../components/cat'
 import {
   useActiveSession,
+  useCancelWorkout,
   useFinishWorkout,
   useLogSet,
   usePreviousSessionSets,
@@ -14,7 +15,13 @@ import {
   type ActiveSession,
   type SetRow,
 } from './api'
-import { computeSummary, workingRepsFor, workingWeightFor, type WorkoutSummary } from './logic'
+import {
+  cancelAllowed,
+  computeSummary,
+  workingRepsFor,
+  workingWeightFor,
+  type WorkoutSummary,
+} from './logic'
 
 export function WorkoutScreen() {
   const active = useActiveSession()
@@ -131,7 +138,19 @@ function SummaryScreen({ summary, onDone }: { summary: WorkoutSummary; onDone: (
   )
 }
 
-// ── Активная тренировка ───────────────────────────────────────────────────────────────
+// ── Активная тренировка (слайс 12: фокус-режим — пейджер + таймер отдыха) ─────────────
+type Slide = {
+  key: string
+  exerciseId: string
+  templateExerciseId?: string
+  name: string
+  isBodyweight: boolean
+  planWeight: number | null
+  planReps: number
+  setsPlanned: number | null
+  planText: string
+}
+
 function ActiveWorkout({
   session,
   onFinished,
@@ -143,8 +162,12 @@ function ActiveWorkout({
   const sets = useSessionSets(session.id)
   const prev = usePreviousSessionSets(session.template_id, session.id)
   const finish = useFinishWorkout()
-  const [confirming, setConfirming] = useState(false)
+  const cancel = useCancelWorkout()
+  const [confirmingFinish, setConfirmingFinish] = useState(false)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
   const [extraIds, setExtraIds] = useState<string[]>([])
+  const [slide, setSlide] = useState(0)
+  const rest = useRestTimer()
 
   const dayName = session.day_templates?.name ?? 'Тренировка'
 
@@ -155,92 +178,340 @@ function ActiveWorkout({
     finish.mutate(session.id, { onSuccess: () => onFinished(summary) })
   }
 
+  if (plan.isPending || sets.isPending) return <CenterMsg text="Загрузка…" />
+  if (plan.isError) return <p className="text-danger">Ошибка: {(plan.error as Error).message}</p>
+  if (sets.isError) return <p className="text-danger">Ошибка: {(sets.error as Error).message}</p>
+
+  const allSets = sets.data
+
+  // Слайды пейджера: плановые упражнения по порядку, за ними внеплановые.
+  const slides: Slide[] = [
+    ...plan.data.template_exercises.map((te) => ({
+      key: te.id,
+      exerciseId: te.exercise_id,
+      templateExerciseId: te.id,
+      name: te.exercises?.name ?? 'Упражнение',
+      isBodyweight: te.weight === null,
+      planWeight: te.weight,
+      planReps: te.reps_planned,
+      setsPlanned: te.sets_planned,
+      planText: te.weight === null ? `× ${te.reps_planned}` : `${te.weight}кг × ${te.reps_planned}`,
+    })),
+    ...extraIds.map((exId) => ({
+      key: exId,
+      exerciseId: exId,
+      name: '',
+      isBodyweight: false,
+      planWeight: null,
+      planReps: 10,
+      setsPlanned: null,
+      planText: 'вне плана',
+    })),
+  ]
+  const idx = Math.min(slide, slides.length - 1)
+  const current = slides[idx]
+
+  const doneOf = (exId: string) => allSets.filter((s) => s.exercise_id === exId).length
+  const planDoneOf = (s: Slide) =>
+    s.setsPlanned !== null && doneOf(s.exerciseId) >= s.setsPlanned
+
+  const summaryNow = computeSummary(plan.data.template_exercises, allSets)
+  const canCancel = cancelAllowed(summaryNow.doneSets, summaryNow.plannedSets)
+
   return (
-    <div className="flex flex-col">
-      <header className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="font-display min-w-0 truncate text-2xl font-extrabold tracking-tight text-ink-strong">
-          {dayName}
-        </h1>
-        {confirming ? (
-          <div className="flex shrink-0 items-center gap-2">
+    <div className={`flex flex-col ${rest.endsAt !== null ? 'pb-24' : 'pb-2'}`}>
+      <header className="mb-3 flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display min-w-0 truncate text-2xl font-extrabold tracking-tight text-ink-strong">
+            {dayName}
+          </h1>
+          {confirmingFinish ? (
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                onClick={handleFinish}
+                disabled={finish.isPending}
+                className="min-h-[44px] rounded-xl bg-brand px-3 text-sm font-extrabold text-white disabled:opacity-50"
+              >
+                Точно завершить?
+              </button>
+              <button
+                onClick={() => setConfirmingFinish(false)}
+                className="min-h-[44px] px-2 text-sm text-muted underline"
+              >
+                Нет
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={handleFinish}
-              disabled={finish.isPending}
-              className="min-h-[44px] rounded-xl bg-brand px-3 text-sm font-extrabold text-white disabled:opacity-50"
+              onClick={() => setConfirmingFinish(true)}
+              className="min-h-[44px] shrink-0 rounded-xl border-2 border-border bg-surface px-3 text-sm font-bold text-ink"
             >
-              Точно завершить?
+              Завершить
             </button>
-            <button
-              onClick={() => setConfirming(false)}
-              className="min-h-[44px] px-2 text-sm text-muted underline"
-            >
-              Нет
-            </button>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          {/* Точки прогресса: тап — прыжок к упражнению */}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-0.5">
+              {slides.map((sl, i) => (
+                <button
+                  key={sl.key}
+                  aria-label={`Упражнение ${i + 1}`}
+                  onClick={() => setSlide(i)}
+                  className="grid size-6 place-items-center"
+                >
+                  <span
+                    className={`block size-2.5 rounded-full ${
+                      i === idx ? 'bg-brand' : planDoneOf(sl) ? 'bg-success' : 'bg-border'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <span className="tabular shrink-0 text-xs font-bold text-muted">
+              {idx + 1}/{slides.length}
+            </span>
           </div>
-        ) : (
-          <button
-            onClick={() => setConfirming(true)}
-            className="min-h-[44px] shrink-0 rounded-xl border-2 border-border bg-surface px-3 text-sm font-bold text-ink"
-          >
-            Завершить
-          </button>
-        )}
+
+          {/* Отмена видна только пока сделано < 20% плана */}
+          {canCancel &&
+            (confirmingCancel ? (
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  onClick={() => cancel.mutate(session.id)}
+                  disabled={cancel.isPending}
+                  className="min-h-[44px] rounded-xl bg-brand px-3 text-xs font-extrabold text-white disabled:opacity-50"
+                >
+                  Удалить тренировку?
+                </button>
+                <button
+                  onClick={() => setConfirmingCancel(false)}
+                  className="min-h-[44px] px-2 text-sm text-muted underline"
+                >
+                  Нет
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmingCancel(true)}
+                className="min-h-[44px] shrink-0 px-2 text-xs text-muted underline"
+              >
+                Отменить
+              </button>
+            ))}
+        </div>
       </header>
 
       {finish.isError && (
         <p className="mb-3 text-sm text-danger">{(finish.error as Error).message}</p>
       )}
+      {cancel.isError && (
+        <p className="mb-3 text-sm text-danger">{(cancel.error as Error).message}</p>
+      )}
 
-      {plan.isPending || sets.isPending ? (
-        <CenterMsg text="Загрузка…" />
-      ) : plan.isError ? (
-        <p className="text-danger">Ошибка: {(plan.error as Error).message}</p>
-      ) : sets.isError ? (
-        <p className="text-danger">Ошибка: {(sets.error as Error).message}</p>
-      ) : plan.data.template_exercises.length === 0 ? (
+      {slides.length === 0 ? (
         <p className="text-muted">В этом дне нет упражнений.</p>
       ) : (
         <>
-          <ul className="flex flex-col gap-2">
-            {plan.data.template_exercises.map((te) => (
-              <ExerciseCard
-                key={te.id}
-                sessionId={session.id}
-                templateId={session.template_id}
-                templateExerciseId={te.id}
-                exerciseId={te.exercise_id}
-                name={te.exercises?.name ?? 'Упражнение'}
-                isBodyweight={te.weight === null}
-                planWeight={te.weight}
-                planReps={te.reps_planned}
-                setsPlanned={te.sets_planned}
-                ownSets={sets.data.filter((s) => s.exercise_id === te.exercise_id)}
-                prevSets={prev.data?.[te.exercise_id]}
-              />
-            ))}
-            {extraIds.map((exId) => (
-              <ExtraExerciseCard
-                key={exId}
-                sessionId={session.id}
-                templateId={session.template_id}
-                exerciseId={exId}
-                ownSets={sets.data.filter((s) => s.exercise_id === exId)}
-                prevSets={prev.data?.[exId]}
-              />
-            ))}
-          </ul>
+          {/* Слайд: одно упражнение на экран */}
+          {current.templateExerciseId !== undefined ? (
+            <ExerciseCard
+              key={current.key}
+              sessionId={session.id}
+              templateId={session.template_id}
+              templateExerciseId={current.templateExerciseId}
+              exerciseId={current.exerciseId}
+              name={current.name}
+              isBodyweight={current.isBodyweight}
+              planWeight={current.planWeight}
+              planReps={current.planReps}
+              setsPlanned={current.setsPlanned}
+              ownSets={allSets.filter((x) => x.exercise_id === current.exerciseId)}
+              prevSets={prev.data?.[current.exerciseId]}
+              onGesture={rest.unlock}
+              onLogged={rest.start}
+            />
+          ) : (
+            <ExtraExerciseCard
+              key={current.key}
+              sessionId={session.id}
+              templateId={session.template_id}
+              exerciseId={current.exerciseId}
+              ownSets={allSets.filter((x) => x.exercise_id === current.exerciseId)}
+              prevSets={prev.data?.[current.exerciseId]}
+              onGesture={rest.unlock}
+              onLogged={rest.start}
+            />
+          )}
 
-          <AddExerciseSection
-            hiddenIds={[
-              ...plan.data.template_exercises.map((te) => te.exercise_id),
-              ...extraIds,
-            ]}
-            onAdd={(exId) => setExtraIds((prev) => [...prev, exId])}
-          />
+          {/* Навигация пейджера */}
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <button
+              onClick={() => setSlide(Math.max(0, idx - 1))}
+              disabled={idx === 0}
+              className="card-shadow min-h-[48px] rounded-xl bg-surface px-4 text-sm font-bold text-ink transition-transform active:scale-[0.98] disabled:opacity-30"
+            >
+              ← Назад
+            </button>
+            <button
+              onClick={() => setSlide(Math.min(slides.length - 1, idx + 1))}
+              disabled={idx === slides.length - 1}
+              className="card-shadow min-h-[48px] rounded-xl bg-surface px-4 text-sm font-bold text-ink transition-transform active:scale-[0.98] disabled:opacity-30"
+            >
+              Далее →
+            </button>
+          </div>
+
+          {/* Добавление внепланового — только на последнем слайде */}
+          {idx === slides.length - 1 && (
+            <AddExerciseSection
+              hiddenIds={[
+                ...plan.data.template_exercises.map((te) => te.exercise_id),
+                ...extraIds,
+              ]}
+              onAdd={(exId) => {
+                setExtraIds((ids) => [...ids, exId])
+                setSlide(slides.length) // сразу к новому слайду
+              }}
+            />
+          )}
         </>
+      )}
+
+      {rest.endsAt !== null && (
+        <RestBar
+          endsAt={rest.endsAt}
+          audio={rest.audioRef.audio}
+          onAdd={() => rest.add(30)}
+          onStop={rest.stop}
+        />
       )}
     </div>
   )
+}
+
+// ── Таймер отдыха ─────────────────────────────────────────────────────────────────────
+const REST_SECONDS = 90
+
+// Состояние таймера — модульный синглтон: переживает смену таба
+// (WorkoutScreen размонтируется, отсчёт продолжает идти от timestamp).
+const restState: { endsAt: number | null; audio: AudioContext | null } = {
+  endsAt: null,
+  audio: null,
+}
+
+function useRestTimer() {
+  const [endsAt, setEndsAt] = useState<number | null>(restState.endsAt)
+  useEffect(() => {
+    restState.endsAt = endsAt
+  }, [endsAt])
+
+  // AudioContext создаём/резюмим синхронно в обработчике тапа «подход» —
+  // иначе iOS не разблокирует звук (нужен пользовательский жест).
+  const unlock = () => {
+    if (!restState.audio) {
+      const Ctx =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (Ctx) restState.audio = new Ctx()
+    }
+    void restState.audio?.resume()
+  }
+
+  const start = () => setEndsAt(Date.now() + REST_SECONDS * 1000)
+  const add = (sec: number) => setEndsAt((e) => (e === null ? e : e + sec * 1000))
+  const stop = () => setEndsAt(null)
+
+  return { endsAt, unlock, start, add, stop, audioRef: restState }
+}
+
+// Липкая панель отдыха: отсчёт, +30с, пропуск. По нулях — бип и надпись
+// «Отдых закончен», панель висит до тапа (не исчезает незамеченной).
+function RestBar({
+  endsAt,
+  audio,
+  onAdd,
+  onStop,
+}: {
+  endsAt: number
+  audio: AudioContext | null
+  onAdd: () => void
+  onStop: () => void
+}) {
+  const [leftMs, setLeftMs] = useState(() => Math.max(0, endsAt - Date.now()))
+  const beepedRef = useRef(false)
+
+  useEffect(() => {
+    const tick = () => setLeftMs(Math.max(0, endsAt - Date.now()))
+    tick()
+    const t = setInterval(tick, 250)
+    return () => clearInterval(t)
+  }, [endsAt])
+
+  useEffect(() => {
+    if (leftMs <= 0 && !beepedRef.current) {
+      beepedRef.current = true
+      beep(audio)
+    }
+  }, [leftMs, audio])
+
+  const done = leftMs <= 0
+  const totalSec = Math.floor((leftMs + 999) / 1000) // округление вверх: полные 1:30
+  const mm = Math.floor(totalSec / 60)
+  const ss = String(totalSec % 60).padStart(2, '0')
+
+  return (
+    <div className="fixed inset-x-0 bottom-[calc(53px+env(safe-area-inset-bottom))] z-20 px-4">
+      <div className="card-shadow mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-butter p-3">
+        <span
+          className={`font-display tabular text-2xl font-extrabold ${
+            done ? 'text-success' : 'text-ink-strong'
+          }`}
+        >
+          {done ? <Paw size={22} /> : `${mm}:${ss}`}
+        </span>
+        <span className="min-w-0 text-sm font-bold text-ink">
+          {done ? 'Отдых закончен' : 'Отдых'}
+        </span>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {!done && (
+            <button
+              onClick={onAdd}
+              className="min-h-[44px] rounded-xl border-2 border-ink-strong px-3 text-sm font-extrabold text-ink-strong active:bg-paper"
+            >
+              +30с
+            </button>
+          )}
+          <button
+            onClick={onStop}
+            className="min-h-[44px] rounded-xl bg-ink-strong px-3 text-sm font-extrabold text-white"
+          >
+            {done ? 'Готово' : 'Пропустить'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Короткий бип через WebAudio. Контекст разблокирован тапом «подход»; если
+// звука нет (тихий режим iOS, запрет автозвука) — остаётся визуальный сигнал.
+// Вибрации на iOS PWA нет (navigator.vibrate не поддерживается).
+function beep(ctx: AudioContext | null) {
+  if (!ctx) return
+  const t = ctx.currentTime
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.connect(gain)
+  gain.connect(ctx.destination)
+  osc.frequency.value = 880
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02)
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7)
+  osc.start(t)
+  osc.stop(t + 0.75)
 }
 
 // ── Карточка упражнения (плановое) ────────────────────────────────────────────────────
@@ -253,9 +524,11 @@ function ExerciseCard(props: {
   isBodyweight: boolean
   planWeight: number | null
   planReps: number
-  setsPlanned: number
+  setsPlanned: number | null
   ownSets: SetRow[]
   prevSets: SetRow[] | undefined
+  onGesture?: () => void
+  onLogged?: () => void
 }) {
   const planText = props.isBodyweight
     ? `× ${props.planReps}`
@@ -270,6 +543,8 @@ function ExtraExerciseCard(props: {
   exerciseId: string
   ownSets: SetRow[]
   prevSets: SetRow[] | undefined
+  onGesture?: () => void
+  onLogged?: () => void
 }) {
   const ex = useExercises(false)
   const found = ex.data?.find((e) => e.id === props.exerciseId)
@@ -287,6 +562,8 @@ function ExtraExerciseCard(props: {
       ownSets={props.ownSets}
       prevSets={props.prevSets}
       planText="вне плана"
+      onGesture={props.onGesture}
+      onLogged={props.onLogged}
     />
   )
 }
@@ -305,6 +582,8 @@ function ExerciseCardBody(props: {
   ownSets: SetRow[]
   prevSets: SetRow[] | undefined
   planText: string
+  onGesture?: () => void
+  onLogged?: () => void
 }) {
   const logSet = useLogSet()
   const undoSet = useUndoSet()
@@ -334,26 +613,34 @@ function ExerciseCardBody(props: {
       : '—'
 
   const logWorking = () => {
+    props.onGesture?.() // синхронно в жесте: разблокировать звук для бипа таймера
+    const onSuccess = () => props.onLogged?.() // автостарт таймера отдыха
     if (props.isBodyweight) {
-      logSet.mutate({
-        sessionId: props.sessionId,
-        exerciseId: props.exerciseId,
-        weight: null,
-        reps: workReps,
-        templateId: props.templateId,
-        templateExerciseId: props.templateExerciseId,
-        isBodyweight: true,
-      })
+      logSet.mutate(
+        {
+          sessionId: props.sessionId,
+          exerciseId: props.exerciseId,
+          weight: null,
+          reps: workReps,
+          templateId: props.templateId,
+          templateExerciseId: props.templateExerciseId,
+          isBodyweight: true,
+        },
+        { onSuccess },
+      )
     } else {
-      logSet.mutate({
-        sessionId: props.sessionId,
-        exerciseId: props.exerciseId,
-        weight: workWeight,
-        reps: props.planReps,
-        templateId: props.templateId,
-        templateExerciseId: props.templateExerciseId,
-        isBodyweight: false,
-      })
+      logSet.mutate(
+        {
+          sessionId: props.sessionId,
+          exerciseId: props.exerciseId,
+          weight: workWeight,
+          reps: props.planReps,
+          templateId: props.templateId,
+          templateExerciseId: props.templateExerciseId,
+          isBodyweight: false,
+        },
+        { onSuccess },
+      )
     }
   }
 
