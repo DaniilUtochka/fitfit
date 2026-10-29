@@ -171,6 +171,7 @@ function PlanRow({
 
       {update.isError && <p className="text-sm text-danger">{(update.error as Error).message}</p>}
       {reorder.isError && <p className="text-sm text-danger">{(reorder.error as Error).message}</p>}
+      {remove.isError && <p className="text-sm text-danger">{(remove.error as Error).message}</p>}
 
       <button
         onClick={() => remove.mutate({ id: te.id, templateId })}

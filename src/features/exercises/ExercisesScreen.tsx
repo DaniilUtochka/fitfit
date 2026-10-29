@@ -228,6 +228,10 @@ function ExerciseCard({ exercise }: { exercise: ExerciseWithGroups }) {
           В архив
         </button>
       )}
+
+      {archive.isError && (
+        <p className="text-sm text-danger">{(archive.error as Error).message}</p>
+      )}
     </li>
   )
 }
