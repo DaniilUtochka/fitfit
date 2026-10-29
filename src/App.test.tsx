@@ -98,6 +98,7 @@ describe('App: навигация (панель профиля вместо та
 
     expect(screen.getByRole('menu')).toBeTruthy()
     expect(screen.getByText('dan@gmail.com')).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Прогресс' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'Тренировка' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'Дни' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'История' })).toBeTruthy()
