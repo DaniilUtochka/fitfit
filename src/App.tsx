@@ -10,6 +10,7 @@ import { MoreScreen } from './features/more/MoreScreen'
 import { HistoryScreen } from './features/history/HistoryScreen'
 import { HistoryDetailScreen } from './features/history/HistoryDetailScreen'
 import { WorkoutScreen } from './features/workout/WorkoutScreen'
+import { ProgressScreen } from './features/progress/ProgressScreen'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -40,6 +41,7 @@ function App() {
       <Route element={<Layout email={session.user.email ?? ''} />}>
         <Route index element={<Navigate to="/workout" replace />} />
         <Route path="workout" element={<WorkoutScreen />} />
+        <Route path="progress" element={<ProgressScreen />} />
         <Route path="days" element={<DaysScreen />} />
         <Route path="days/:id" element={<DayEditorScreen />} />
         <Route path="exercises" element={<ExercisesScreen />} />
@@ -81,7 +83,7 @@ function Layout({ email }: { email: string }) {
 
       <nav className="sticky bottom-0 flex border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_-16px_rgba(42,47,90,0.4)] backdrop-blur">
         <TabLink to="/workout" label="Тренировка" />
-        <TabLink to="/days" label="Дни" />
+        <TabLink to="/progress" label="Прогресс" />
         <TabLink to="/more" label="Ещё" />
       </nav>
     </div>
