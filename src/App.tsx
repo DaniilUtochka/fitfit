@@ -118,6 +118,7 @@ function ProfileMenu({ email }: { email: string }) {
         >
           <p className="min-w-0 truncate px-3 py-2 text-sm text-muted">{email}</p>
           <div className="mx-3 mb-1 border-t-2 border-dashed border-line-2" />
+          <MenuItem to="/progress" label="Прогресс" onNavigate={() => setOpen(false)} />
           <MenuItem to="/workout" label="Тренировка" onNavigate={() => setOpen(false)} />
           <MenuItem to="/days" label="Дни" onNavigate={() => setOpen(false)} />
           <MenuItem to="/history" label="История" onNavigate={() => setOpen(false)} />
