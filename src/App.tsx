@@ -7,6 +7,8 @@ import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
 import { MoreScreen } from './features/more/MoreScreen'
+import { HistoryScreen } from './features/history/HistoryScreen'
+import { HistoryDetailScreen } from './features/history/HistoryDetailScreen'
 import { WorkoutScreen } from './features/workout/WorkoutScreen'
 
 function App() {
@@ -42,6 +44,8 @@ function App() {
         <Route path="days/:id" element={<DayEditorScreen />} />
         <Route path="exercises" element={<ExercisesScreen />} />
         <Route path="more" element={<MoreScreen />} />
+        <Route path="history" element={<HistoryScreen />} />
+        <Route path="history/:sessionId" element={<HistoryDetailScreen />} />
         <Route path="*" element={<Navigate to="/workout" replace />} />
       </Route>
     </Routes>

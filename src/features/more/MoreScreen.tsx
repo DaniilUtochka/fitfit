@@ -12,6 +12,15 @@ export function MoreScreen() {
       <ul className="flex flex-col gap-2.5">
         <li>
           <NavLink
+            to="/history"
+            className="card-shadow flex min-h-[60px] w-full items-center justify-between rounded-2xl bg-surface px-4 transition-transform active:scale-[0.98]"
+          >
+            <span className="font-bold text-ink-strong">История</span>
+            <span className="text-sm font-extrabold text-brand">Открыть →</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
             to="/exercises"
             className="card-shadow flex min-h-[60px] w-full items-center justify-between rounded-2xl bg-surface px-4 transition-transform active:scale-[0.98]"
           >
