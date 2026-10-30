@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { Cat, Paw } from '../../components/cat'
+import { Paw } from '../../components/cat'
+import { CatArt, type CatName } from '../../components/cats'
+import { consumeAppUpdated, pickCtaCat, readFinishedAt } from '../../lib/mascot'
 import { useProgressData, type ProgressData } from './api'
 import { formatDateShort } from '../history/logic'
 import {
@@ -33,18 +35,32 @@ import {
 export function ProgressScreen() {
   const query = useProgressData()
 
+  // Кот на кнопке — единственный постоянный маскот экрана (правило DESIGN.md):
+  // утром тянется, вечером спит, после свежей тренировки выжат, вернулся после
+  // перерыва — «с возвращением» на коврике.
+  const ctaCat = useMemo(
+    () =>
+      pickCtaCat({
+        now: Date.now(),
+        hour: new Date().getHours(),
+        lastSessionAt: lastSessionEnd(query.data?.sessions),
+        finishedAt: readFinishedAt(),
+      }),
+    [query.data],
+  )
+
   let body: React.ReactNode
   if (query.isPending) {
     body = (
       <StatePanel>
-        <Cat mood="sleepy" size={80} />
+        <CatArt name="sleepy" size={80} />
         <p className="font-bold text-muted">Считаю твой прогресс…</p>
       </StatePanel>
     )
   } else if (query.isError) {
     body = (
       <StatePanel>
-        <Cat mood="sleepy" size={80} />
+        <CatArt name="wrecked" size={80} />
         <p className="font-bold text-ink">Не смог посчитать прогресс</p>
         <button
           onClick={() => void query.refetch()}
@@ -64,22 +80,55 @@ export function ProgressScreen() {
     <>
       {/* 56px кнопка + воздух: паддинг живёт на контенте, кнопка фиксирована на safe-area */}
       <div className="pb-[calc(env(safe-area-inset-bottom)+4.5rem)]">{body}</div>
-      <StartWorkoutButton />
+      <StartWorkoutButton cat={ctaCat} />
+      <UpdateJoy />
     </>
   )
 }
 
+// Конец последней тренировки: max finished_at. Без тренировок — null.
+function lastSessionEnd(sessions: ProgressData['sessions'] | undefined): number | null {
+  if (!sessions || sessions.length === 0) return null
+  return Math.max(...sessions.map((s) => new Date(s.finished_at).getTime()))
+}
+
 // Большая кнопка старта: fixed к низу, поверх контента, тап ведёт на /workout —
-// там уже решается «выбор дня или активная тренировка».
-function StartWorkoutButton() {
+// там уже решается «выбор дня или активная тренировка». Кот лежит на верхнем
+// краю кнопки: pointer-events-none, тап-таргет не меняет, котом не является.
+function StartWorkoutButton({ cat }: { cat: CatName }) {
   return (
     <Link
       to="/workout"
       className="card-shadow fixed inset-x-0 bottom-[env(safe-area-inset-bottom)] z-40 mx-auto flex min-h-[56px] w-[min(calc(100%-2rem),27.5rem)] items-center justify-center gap-2 rounded-xl bg-brand text-lg font-extrabold text-white transition-transform active:scale-[0.98]"
     >
+      <span className="pointer-events-none absolute -top-[30px] left-4">
+        <CatArt name={cat} size={64} />
+      </span>
       <Paw size={22} />
       Начать тренировку
     </Link>
+  )
+}
+
+// Разовый праздник после принудительного обновления PWA (слайс 15): pwa.ts
+// ставит флаг перед релоадом, тут кот с конфетти показывается один раз.
+function UpdateJoy() {
+  const [show, setShow] = useState(consumeAppUpdated)
+
+  useEffect(() => {
+    if (!show) return
+    const t = setTimeout(() => setShow(false), 3400)
+    return () => clearTimeout(t)
+  }, [show])
+
+  if (!show) return null
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-30 flex flex-col items-center">
+      <CatArt name="joy" size={84} />
+      <p className="card-shadow -mt-1 rounded-full bg-butter px-3 py-1 text-xs font-extrabold text-ink-strong">
+        FitFit обновился
+      </p>
+    </div>
   )
 }
 
@@ -105,7 +154,7 @@ function EmptyState() {
         Прогресс
       </h1>
       <div className="flex flex-col items-center gap-1 rounded-2xl bg-sky p-6 text-center">
-        <Cat mood="hello" size={96} />
+        <CatArt name="band" size={96} />
         <p className="mt-2 text-[17px] font-bold text-ink-strong">Тут появятся твои цифры</p>
         <p className="text-sm text-muted">
           Тонны, часы и даже «+дни жизни».
@@ -222,7 +271,6 @@ function LifeGainHero({ life, totalWorkouts }: { life: ReturnType<typeof compute
               {formatLifeDays(life.days)}
             </span>
           </p>
-          <Cat mood="happy" size={88} />
         </div>
         <p className="mt-1.5 text-sm text-ink-2">
           {zeroed

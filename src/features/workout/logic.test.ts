@@ -4,9 +4,64 @@ import {
   ratchetUp,
   computeSummary,
   cancelAllowed,
+  countPrs,
   workingWeightFor,
   workingRepsFor,
 } from './logic'
+
+describe('countPrs', () => {
+  const plan = [
+    { exercise_id: 'bench', sets_planned: 3 },
+    { exercise_id: 'rows', sets_planned: 3 },
+    { exercise_id: 'plank', sets_planned: 2 }, // bodyweight
+  ]
+  const prev = {
+    bench: [{ exercise_id: 'bench', weight: 40, reps: 8 }],
+    rows: [{ exercise_id: 'rows', weight: 50, reps: 8 }],
+    plank: [{ exercise_id: 'plank', weight: null, reps: 40 }],
+  }
+
+  it('нет прошлой сессии — рекордов нет (не с чем сравнивать)', () => {
+    const sets = [{ exercise_id: 'bench', weight: 60, reps: 8 }]
+    expect(countPrs(plan, sets, undefined)).toBe(0)
+  })
+
+  it('максимум выше прошлого — рекорд', () => {
+    const sets = [{ exercise_id: 'bench', weight: 42.5, reps: 8 }]
+    expect(countPrs([plan[0]], sets, prev)).toBe(1)
+  })
+
+  it('берёт максимум за сессию, не первый подход', () => {
+    const sets = [
+      { exercise_id: 'bench', weight: 30, reps: 8 },
+      { exercise_id: 'bench', weight: 42.5, reps: 6 },
+    ]
+    expect(countPrs([plan[0]], sets, prev)).toBe(1)
+  })
+
+  it('ровно тот же вес — не рекорд; ниже — тем более', () => {
+    const equal = [{ exercise_id: 'bench', weight: 40, reps: 10 }]
+    const lower = [{ exercise_id: 'bench', weight: 35, reps: 10 }]
+    expect(countPrs([plan[0]], equal, prev)).toBe(0)
+    expect(countPrs([plan[0]], lower, prev)).toBe(0)
+  })
+
+  it('bodyweight и внеплановые не в счёт', () => {
+    const sets = [
+      { exercise_id: 'plank', weight: null, reps: 60 },
+      { exercise_id: 'curls', weight: 15, reps: 10 }, // нет в плане
+    ]
+    expect(countPrs(plan, sets, prev)).toBe(0)
+  })
+
+  it('несколько рекордов складываются', () => {
+    const sets = [
+      { exercise_id: 'bench', weight: 45, reps: 8 },
+      { exercise_id: 'rows', weight: 52.5, reps: 8 },
+    ]
+    expect(countPrs(plan, sets, prev)).toBe(2)
+  })
+})
 
 describe('cancelAllowed', () => {
   it('0 подходов — отменить можно', () => {

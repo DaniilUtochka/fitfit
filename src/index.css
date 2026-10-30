@@ -77,3 +77,146 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* ── Коты-маскоты (слайс 15): анимация слоёв SVG ───────────────────────────────
+   Группы-слои внутри кота получают класс (.cat-tail, .cat-breathe …).
+   transform-box: fill-box — origin считается от bbox самой группы, поэтому
+   пресеты не зависят от координат конкретного кота.
+   Idle-циклы (хвост, дыхание, zzz) бесконечные и едва заметные; событийные
+   (потягивание, прыжок, конфетти) играют 2–3 раза и замирают. */
+@keyframes cat-tail-wag {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+@keyframes cat-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.015, 1.045);
+  }
+}
+@keyframes cat-blink {
+  0%,
+  91%,
+  97%,
+  100% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes cat-stretch {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07, 0.95);
+  }
+}
+@keyframes cat-zzz-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 3px);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(7px, -11px);
+  }
+}
+@keyframes cat-jump {
+  0%,
+  78%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-16%);
+  }
+  45% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-8%);
+  }
+}
+@keyframes cat-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate(0, -6px) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(3px, 14px) rotate(160deg);
+  }
+}
+
+.cat-tail {
+  transform-box: fill-box;
+  transform-origin: 40% 100%;
+  animation: cat-tail-wag 2.8s ease-in-out infinite;
+}
+.cat-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cat-breathe 3.2s ease-in-out infinite;
+}
+.cat-blink {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: cat-blink 4.4s linear infinite;
+}
+.cat-stretch {
+  transform-box: fill-box;
+  transform-origin: 30% 100%;
+  animation: cat-stretch 2.4s ease-in-out 2;
+}
+.cat-zzz {
+  transform-box: fill-box;
+  animation: cat-zzz-float 2.6s ease-out infinite;
+}
+.cat-zzz-2 {
+  animation-delay: 1.3s;
+}
+.cat-jump {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cat-jump 1.4s ease-in-out 3;
+}
+.cat-confetti {
+  transform-box: fill-box;
+  animation: cat-confetti-fall 1.9s ease-in 2 forwards;
+}
+.cat-pump {
+  transform-box: fill-box;
+  transform-origin: 20% 90%;
+  animation: cat-tail-wag 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-tail,
+  .cat-breathe,
+  .cat-blink,
+  .cat-stretch,
+  .cat-zzz,
+  .cat-zzz-2,
+  .cat-jump,
+  .cat-confetti,
+  .cat-pump {
+    animation: none;
+  }
+}

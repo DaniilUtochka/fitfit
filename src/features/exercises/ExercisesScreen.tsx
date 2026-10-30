@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Cat } from '../../components/cat'
+import { CatArt } from '../../components/cats'
 import {
   useArchiveExercise,
   useCreateExercise,
@@ -40,7 +40,7 @@ export function ExercisesScreen() {
         <p className="text-danger">Ошибка: {(exercises.error as Error).message}</p>
       ) : exercises.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <Cat mood="sleepy" size={80} />
+          <CatArt name="dumbbell" size={80} />
           <p className="font-bold text-ink">Пока пусто</p>
           <p className="text-sm text-muted">Заведи первое упражнение в форме выше</p>
         </div>

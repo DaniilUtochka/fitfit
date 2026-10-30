@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router'
 import { supabase } from './lib/supabase'
-import { Cat, Paw } from './components/cat'
+import { Paw } from './components/cat'
+import { CatArt } from './components/cats'
+import { MascotGallery } from './components/cats/Gallery'
 import { ExercisesScreen } from './features/exercises/ExercisesScreen'
 import { DaysScreen } from './features/days/DaysScreen'
 import { DayEditorScreen } from './features/days/DayEditorScreen'
@@ -32,6 +34,9 @@ function App() {
 
   // Первый кадр до восстановления сессии — не мигаем экраном логина.
   if (loading) return null
+
+  // Dev-галерея маскотов (слайс 15): только в dev-сервере, в прод-сборке мертво.
+  if (import.meta.env.DEV && window.location.pathname === '/mascots') return <MascotGallery />
 
   if (!session) return <Login />
 
@@ -114,8 +119,12 @@ function ProfileMenu({ email }: { email: string }) {
       {open && (
         <div
           role="menu"
-          className="card-shadow mt-2 flex w-[280px] flex-col rounded-2xl bg-surface p-2"
+          className="card-shadow relative mt-2 flex w-[280px] flex-col rounded-2xl bg-surface p-2"
         >
+          {/* Кот выглядывает из-за верхнего края панели: не тапабелен, мешать нечему */}
+          <span className="pointer-events-none absolute -top-5 left-3 -rotate-[10deg]">
+            <CatArt name="dumbbell" size={34} />
+          </span>
           <p className="min-w-0 truncate px-3 py-2 text-sm text-muted">{email}</p>
           <div className="mx-3 mb-1 border-t-2 border-dashed border-line-2" />
           <MenuItem to="/progress" label="Прогресс" onNavigate={() => setOpen(false)} />
@@ -221,7 +230,7 @@ function BrandMark() {
       className="card-shadow mb-4 grid size-[112px] place-items-center rounded-[28px] bg-lilac"
       aria-hidden="true"
     >
-      <Cat mood="hello" size={92} />
+      <CatArt name="band" size={84} />
     </div>
   )
 }

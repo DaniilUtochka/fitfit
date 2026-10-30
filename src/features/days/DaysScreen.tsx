@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Cat } from '../../components/cat'
+import { CatArt } from '../../components/cats'
 import {
   useArchiveDayTemplate,
   useCreateDayTemplate,
@@ -39,7 +39,7 @@ export function DaysScreen() {
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <Cat mood="sleepy" size={80} />
+          <CatArt name="mat" size={80} />
           <p className="font-bold text-ink">Пока пусто</p>
           <p className="text-sm text-muted">Создай первый день в форме выше</p>
         </div>

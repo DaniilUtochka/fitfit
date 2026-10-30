@@ -1,4 +1,5 @@
 import { registerSW } from 'virtual:pwa-register'
+import { markAppUpdated } from './mascot'
 
 // Насильное обновление PWA (боль слайса 14: новые изменения не видны на айфоне
 // подолгу). Схема: registerType 'autoUpdate' — новый service worker активируется
@@ -20,6 +21,8 @@ export function setupPwaUpdate(): void {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController || reloading) return
     reloading = true
+    // Флаг для маскота: после релоада кот с конфетти празднует обновление.
+    markAppUpdated()
     window.location.reload()
   })
 
