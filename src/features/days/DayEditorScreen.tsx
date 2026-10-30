@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { Cat } from '../../components/cat'
+import { CatArt } from '../../components/cats'
 import { useExercises } from '../exercises/api'
 import {
   useAddTemplateExercise,
@@ -37,7 +37,7 @@ export function DayEditorScreen() {
 
           {day.data.template_exercises.length === 0 ? (
             <div className="mb-4 flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-              <Cat mood="hello" size={80} />
+              <CatArt name="band" size={80} />
               <p className="font-bold text-ink">Пока пусто</p>
               <p className="text-sm text-muted">Добавь упражнение в форме ниже</p>
             </div>

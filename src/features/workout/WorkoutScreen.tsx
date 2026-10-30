@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDayTemplate, useDayTemplates } from '../days/api'
 import { useExercises } from '../exercises/api'
-import { Cat, Paw } from '../../components/cat'
+import { Paw } from '../../components/cat'
+import { CatArt } from '../../components/cats'
+import { markWorkoutFinished } from '../../lib/mascot'
 import {
   useActiveSession,
   useCancelWorkout,
@@ -18,6 +20,7 @@ import {
 import {
   cancelAllowed,
   computeSummary,
+  countPrs,
   workingRepsFor,
   workingWeightFor,
   type WorkoutSummary,
@@ -26,15 +29,16 @@ import {
 export function WorkoutScreen() {
   const active = useActiveSession()
   // Резюме держим здесь: после финиша active_session станет null и ActiveWorkout
-  // размонтируется — стейт резюме должен пережить этот переход.
-  const [summary, setSummary] = useState<WorkoutSummary | null>(null)
+  // размонтируется — стейт резюме должен пережить этот переход. Рядом — число
+  // личных рекордов сессии (слайс 15): кот на резюме празднует или устало лежит.
+  const [result, setResult] = useState<{ summary: WorkoutSummary; prs: number } | null>(null)
 
-  if (summary) return <SummaryScreen summary={summary} onDone={() => setSummary(null)} />
+  if (result) return <SummaryScreen result={result} onDone={() => setResult(null)} />
   if (active.isPending) return <CenterMsg text="Загрузка…" />
   if (active.isError) return <CenterMsg text={`Ошибка: ${(active.error as Error).message}`} danger />
 
   return active.data ? (
-    <ActiveWorkout session={active.data} onFinished={setSummary} />
+    <ActiveWorkout session={active.data} onFinished={setResult} />
   ) : (
     <DayChooser />
   )
@@ -45,7 +49,7 @@ function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
     <p className="text-danger">{text}</p>
   ) : (
     <div className="flex flex-col items-center gap-2 py-8">
-      <Cat mood="sleepy" size={72} />
+      <CatArt name="sleepy" size={72} />
       <p className="font-bold text-muted">{text}</p>
     </div>
   )
@@ -69,7 +73,7 @@ function DayChooser() {
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <Cat mood="sleepy" size={80} />
+          <CatArt name="dumbbell" size={80} />
           <p className="font-bold text-ink">Дней пока нет</p>
           <p className="text-sm text-muted">Собери первый день в разделе «Дни»</p>
         </div>
@@ -96,11 +100,27 @@ function DayChooser() {
 }
 
 // ── Экран резюме ──────────────────────────────────────────────────────────────────────
-function SummaryScreen({ summary, onDone }: { summary: WorkoutSummary; onDone: () => void }) {
+// Кот по результату (слайс 15): рекорды — праздник с конфетти, план выполнен —
+// довольный, меньше плана — выжатый с полотенцем. «Готово» запоминает финиш —
+// кот на кнопке старта Прогресса тоже будет выжатым.
+function SummaryScreen({
+  result,
+  onDone,
+}: {
+  result: { summary: WorkoutSummary; prs: number }
+  onDone: () => void
+}) {
+  const { summary, prs } = result
   const allDone = summary.doneSets >= summary.plannedSets
+  const cat = prs > 0 ? 'joy' : allDone ? 'band' : 'wrecked'
   return (
     <div className="flex flex-col">
-      <Cat mood="happy" size={120} />
+      <CatArt name={cat} size={120} />
+      {prs > 0 && (
+        <p className="text-center text-sm font-extrabold text-brand">
+          Личных рекордов: {prs} — план перезапишется сам
+        </p>
+      )}
       <h1 className="font-display mt-1 mb-4 text-center text-2xl font-extrabold tracking-tight text-ink-strong">
         Тренировка завершена
       </h1>
@@ -129,7 +149,10 @@ function SummaryScreen({ summary, onDone }: { summary: WorkoutSummary; onDone: (
         </div>
       </div>
       <button
-        onClick={onDone}
+        onClick={() => {
+          markWorkoutFinished()
+          onDone()
+        }}
         className="mt-6 min-h-[48px] rounded-xl bg-brand px-4 text-[17px] font-extrabold text-white transition-transform active:scale-[0.98]"
       >
         Готово
@@ -156,7 +179,7 @@ function ActiveWorkout({
   onFinished,
 }: {
   session: ActiveSession
-  onFinished: (summary: WorkoutSummary) => void
+  onFinished: (result: { summary: WorkoutSummary; prs: number }) => void
 }) {
   const plan = useDayTemplate(session.template_id)
   const sets = useSessionSets(session.id)
@@ -173,9 +196,10 @@ function ActiveWorkout({
 
   const handleFinish = () => {
     if (!plan.data || !sets.data) return
-    // Резюме считаем из загруженных plan+sets ДО сброса активной сессии.
+    // Резюме и рекорды считаем из загруженных plan+sets+prev ДО сброса активной сессии.
     const summary = computeSummary(plan.data.template_exercises, sets.data)
-    finish.mutate(session.id, { onSuccess: () => onFinished(summary) })
+    const prs = countPrs(plan.data.template_exercises, sets.data, prev.data)
+    finish.mutate(session.id, { onSuccess: () => onFinished({ summary, prs }) })
   }
 
   if (plan.isPending || sets.isPending) return <CenterMsg text="Загрузка…" />
@@ -430,6 +454,8 @@ function useRestTimer() {
 
 // Липкая панель отдыха: отсчёт, +30с, пропуск. По нулях — бип и надпись
 // «Отдых закончен», панель висит до тапа (не исчезает незамеченной).
+// Кот отдыхает вместе с атлетом (слайс 15): лежит и дышит, по готовности —
+// повязка «поехали». Единственное место анимации в боевом флоу.
 function RestBar({
   endsAt,
   audio,
@@ -466,6 +492,9 @@ function RestBar({
   return (
     <div className="fixed inset-x-0 bottom-[calc(53px+env(safe-area-inset-bottom))] z-20 px-4">
       <div className="card-shadow mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-butter p-3">
+        <span className="shrink-0">
+          <CatArt name={done ? 'band' : 'loaf'} size={46} />
+        </span>
         <span
           className={`font-display tabular text-2xl font-extrabold ${
             done ? 'text-success' : 'text-ink-strong'

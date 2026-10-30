@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router'
-import { Cat, Paw } from '../../components/cat'
+import { Paw } from '../../components/cat'
+import { CatArt } from '../../components/cats'
 import { useHistorySessions, type HistorySessionRow } from './api'
 import { formatDateShort } from './logic'
 
@@ -18,14 +19,14 @@ export function HistoryScreen() {
 
       {sessions.isPending ? (
         <div className="flex flex-col items-center gap-2 py-8">
-          <Cat mood="sleepy" size={72} />
+          <CatArt name="sleepy" size={72} />
           <p className="font-bold text-muted">Загрузка…</p>
         </div>
       ) : sessions.isError ? (
         <p className="text-danger">Ошибка: {(sessions.error as Error).message}</p>
       ) : sessions.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <Cat mood="sleepy" size={80} />
+          <CatArt name="sleepy" size={80} />
           <p className="font-bold text-ink">Пока пусто, проведи первую тренировку</p>
         </div>
       ) : (

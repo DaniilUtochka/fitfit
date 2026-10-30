@@ -70,6 +70,33 @@ export function cancelAllowed(doneSets: number, plannedSets: number): boolean {
   return doneSets / plannedSets < 0.2
 }
 
+// Личные рекорды сессии (слайс 15): плановое упражнение с весом, чей максимум
+// сегодня выше максимума прошлой сессии того же упражнения. Ровно = не рекорд.
+// Bodyweight (weight null) и внеплановые упражнения не в счёт — нет весовой планки.
+// prevSets undefined (нет прошлой сессии) — рекордов нет: не с чем сравнивать.
+export function countPrs(
+  planExercises: SummaryPlanLike[],
+  sets: SummarySetLike[],
+  prevSets: Record<string, SummarySetLike[]> | undefined,
+): number {
+  if (!prevSets) return 0
+  let prs = 0
+  for (const ex of planExercises) {
+    const todayMax = maxWeight(sets.filter((s) => s.exercise_id === ex.exercise_id))
+    const prevMax = maxWeight(prevSets[ex.exercise_id] ?? [])
+    if (todayMax !== null && prevMax !== null && todayMax > prevMax) prs++
+  }
+  return prs
+}
+
+function maxWeight(sets: SummarySetLike[]): number | null {
+  let max: number | null = null
+  for (const s of sets) {
+    if (s.weight !== null && (max === null || s.weight > max)) max = s.weight
+  }
+  return max
+}
+
 export type SetValueLike = {
   exercise_id: string
   set_number: number

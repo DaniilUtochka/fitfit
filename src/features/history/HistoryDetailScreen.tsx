@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router'
-import { Cat, Paw } from '../../components/cat'
+import { Paw } from '../../components/cat'
+import { CatArt } from '../../components/cats'
 import { useHistorySession, type HistorySetRow } from './api'
 import type { TemplateExerciseWithExercise } from '../days/api'
 import { formatDateShort } from './logic'
@@ -18,7 +19,7 @@ export function HistoryDetailScreen() {
 
       {session.isPending ? (
         <div className="flex flex-col items-center gap-2 py-8">
-          <Cat mood="sleepy" size={72} />
+          <CatArt name="sleepy" size={72} />
           <p className="font-bold text-muted">Загрузка…</p>
         </div>
       ) : session.isError ? (
@@ -86,8 +87,12 @@ function DetailBody({
         })}
       </ul>
 
-      {/* Резюме: «паспарту» как на экране завершения тренировки (docs/DESIGN.md) */}
-      <h2 className="mb-2 text-sm font-bold text-muted uppercase">Резюме</h2>
+      {/* Резюме: «паспарту» как на экране завершения тренировки (docs/DESIGN.md);
+          за полностью выполненный день — довольный кот (слайс 15) */}
+      <h2 className="mb-2 flex min-h-[44px] items-center justify-between text-sm font-bold text-muted uppercase">
+        Резюме
+        {allDone && <CatArt name="band" size={44} animated={false} />}
+      </h2>
       <div className="mb-4 flex flex-col gap-3">
         <div className="card-shadow rounded-2xl bg-surface p-2.5">
           <div className="flex items-baseline justify-between rounded-[16px] bg-lilac p-4">
