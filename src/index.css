@@ -78,19 +78,27 @@
   }
 }
 
-/* ── Коты-маскоты (слайс 15): анимация слоёв SVG ───────────────────────────────
-   Группы-слои внутри кота получают класс (.cat-tail, .cat-breathe …).
-   transform-box: fill-box — origin считается от bbox самой группы, поэтому
-   пресеты не зависят от координат конкретного кота.
-   Idle-циклы (хвост, дыхание, zzz) бесконечные и едва заметные; событийные
+/* ── Коты-маскоты (слайс 15): анимация спрайтов ────────────────────────────────
+   Коты — вырезки из референса (scripts/extract-cats.py, WebP с альфой),
+   анимируется вся картинка классом (.cat-float, .cat-breathe …).
+   Idle-циклы (парение, дыхание, zzz) бесконечные и едва заметные; событийные
    (потягивание, прыжок, конфетти) играют 2–3 раза и замирают. */
-@keyframes cat-tail-wag {
+@keyframes cat-float {
   0%,
   100% {
-    transform: rotate(-7deg);
+    transform: translateY(0);
   }
   50% {
-    transform: rotate(7deg);
+    transform: translateY(-4%);
+  }
+}
+@keyframes cat-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
   }
 }
 @keyframes cat-breathe {
@@ -100,17 +108,6 @@
   }
   50% {
     transform: scale(1.015, 1.045);
-  }
-}
-@keyframes cat-blink {
-  0%,
-  91%,
-  97%,
-  100% {
-    transform: scaleY(1);
-  }
-  94% {
-    transform: scaleY(0.12);
   }
 }
 @keyframes cat-stretch {
@@ -165,23 +162,18 @@
   }
 }
 
-.cat-tail {
-  transform-box: fill-box;
-  transform-origin: 40% 100%;
-  animation: cat-tail-wag 2.8s ease-in-out infinite;
+.cat-float {
+  animation: cat-float 3.4s ease-in-out infinite;
+}
+.cat-sway {
+  transform-origin: 50% 90%;
+  animation: cat-sway 1.8s ease-in-out infinite;
 }
 .cat-breathe {
-  transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: cat-breathe 3.2s ease-in-out infinite;
 }
-.cat-blink {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  animation: cat-blink 4.4s linear infinite;
-}
 .cat-stretch {
-  transform-box: fill-box;
   transform-origin: 30% 100%;
   animation: cat-stretch 2.4s ease-in-out 2;
 }
@@ -193,7 +185,6 @@
   animation-delay: 1.3s;
 }
 .cat-jump {
-  transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: cat-jump 1.4s ease-in-out 3;
 }
@@ -201,22 +192,16 @@
   transform-box: fill-box;
   animation: cat-confetti-fall 1.9s ease-in 2 forwards;
 }
-.cat-pump {
-  transform-box: fill-box;
-  transform-origin: 20% 90%;
-  animation: cat-tail-wag 1.8s ease-in-out infinite;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .cat-tail,
+  .cat-float,
+  .cat-sway,
   .cat-breathe,
-  .cat-blink,
   .cat-stretch,
   .cat-zzz,
   .cat-zzz-2,
   .cat-jump,
-  .cat-confetti,
-  .cat-pump {
+  .cat-confetti {
     animation: none;
   }
 }

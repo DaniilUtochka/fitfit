@@ -19,7 +19,7 @@ export function HistoryDetailScreen() {
 
       {session.isPending ? (
         <div className="flex flex-col items-center gap-2 py-8">
-          <CatArt name="sleepy" size={72} />
+          <CatArt name="sleepy" size={110} />
           <p className="font-bold text-muted">Загрузка…</p>
         </div>
       ) : session.isError ? (

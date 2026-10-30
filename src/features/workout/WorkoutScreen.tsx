@@ -49,7 +49,7 @@ function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
     <p className="text-danger">{text}</p>
   ) : (
     <div className="flex flex-col items-center gap-2 py-8">
-      <CatArt name="sleepy" size={72} />
+      <CatArt name="sleepy" size={110} />
       <p className="font-bold text-muted">{text}</p>
     </div>
   )
@@ -115,7 +115,8 @@ function SummaryScreen({
   const cat = prs > 0 ? 'joy' : allDone ? 'band' : 'wrecked'
   return (
     <div className="flex flex-col">
-      <CatArt name={cat} size={120} />
+      {/* joy вытянутый вверх — берём меньше, чтобы резюме не расползалось */}
+      <CatArt name={cat} size={cat === 'joy' ? 88 : 116} />
       {prs > 0 && (
         <p className="text-center text-sm font-extrabold text-brand">
           Личных рекордов: {prs} — план перезапишется сам
@@ -492,8 +493,9 @@ function RestBar({
   return (
     <div className="fixed inset-x-0 bottom-[calc(53px+env(safe-area-inset-bottom))] z-20 px-4">
       <div className="card-shadow mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-butter p-3">
-        <span className="shrink-0">
-          <CatArt name={done ? 'band' : 'loaf'} size={46} />
+        {/* Кот по высоте ~40px: лежебока широкая, повязка вертикальная */}
+        <span className="flex w-[40px] shrink-0 items-center justify-center">
+          <CatArt name={done ? 'band' : 'loaf'} size={done ? 32 : 72} />
         </span>
         <span
           className={`font-display tabular text-2xl font-extrabold ${
