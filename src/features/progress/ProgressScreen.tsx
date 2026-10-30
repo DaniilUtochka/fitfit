@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Paw } from '../../components/cat'
-import { CatArt, type CatName } from '../../components/cats'
+import { CatArt, catAspect, type CatName } from '../../components/cats'
 import { consumeAppUpdated, pickCtaCat, readFinishedAt } from '../../lib/mascot'
 import { useProgressData, type ProgressData } from './api'
 import { formatDateShort } from '../history/logic'
@@ -53,7 +53,7 @@ export function ProgressScreen() {
   if (query.isPending) {
     body = (
       <StatePanel>
-        <CatArt name="sleepy" size={80} />
+        <CatArt name="sleepy" size={110} />
         <p className="font-bold text-muted">Считаю твой прогресс…</p>
       </StatePanel>
     )
@@ -95,14 +95,19 @@ function lastSessionEnd(sessions: ProgressData['sessions'] | undefined): number 
 // Большая кнопка старта: fixed к низу, поверх контента, тап ведёт на /workout —
 // там уже решается «выбор дня или активная тренировка». Кот лежит на верхнем
 // краю кнопки: pointer-events-none, тап-таргет не меняет, котом не является.
+// Верх считаем из аспекта спрайта, чтобы низ кота всегда был на 14px внутри кнопки.
 function StartWorkoutButton({ cat }: { cat: CatName }) {
+  const size = 60
   return (
     <Link
       to="/workout"
       className="card-shadow fixed inset-x-0 bottom-[env(safe-area-inset-bottom)] z-40 mx-auto flex min-h-[56px] w-[min(calc(100%-2rem),27.5rem)] items-center justify-center gap-2 rounded-xl bg-brand text-lg font-extrabold text-white transition-transform active:scale-[0.98]"
     >
-      <span className="pointer-events-none absolute -top-[30px] left-4">
-        <CatArt name={cat} size={64} />
+      <span
+        className="pointer-events-none absolute left-4"
+        style={{ top: 14 - size * catAspect(cat) }}
+      >
+        <CatArt name={cat} size={size} />
       </span>
       <Paw size={22} />
       Начать тренировку
@@ -124,7 +129,7 @@ function UpdateJoy() {
   if (!show) return null
   return (
     <div className="pointer-events-none fixed inset-x-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-30 flex flex-col items-center">
-      <CatArt name="joy" size={84} />
+      <CatArt name="joy" size={64} />
       <p className="card-shadow -mt-1 rounded-full bg-butter px-3 py-1 text-xs font-extrabold text-ink-strong">
         FitFit обновился
       </p>

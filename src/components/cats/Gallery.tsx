@@ -1,4 +1,4 @@
-import { CatArt, type CatName } from './index'
+import { CatArt, catAspect, type CatName } from './index'
 
 // Dev-галерея маскотов: открывается только в dev на /mascots — смотеть всех котов
 // в статике и анимации, проверять арт после правок. В прод-сборку рендер не попадает.
@@ -39,23 +39,31 @@ export function MascotGallery() {
 
       <h2 className="font-display mt-10 text-xl font-extrabold text-ink-strong">Слоты</h2>
       <div className="mt-4 flex flex-wrap gap-6">
-        {/* Кот на кнопке старта — как на Прогрессе */}
-        {(['loaf', 'mat', 'sleepy', 'wrecked'] as CatName[]).map((name) => (
-          <div key={name} className="relative pt-8">
-            <span className="pointer-events-none absolute left-4 top-0 z-10">
-              <CatArt name={name} size={64} />
-            </span>
-            <div className="flex min-h-[56px] items-center justify-center gap-2 rounded-xl bg-brand px-6 text-lg font-extrabold text-white">
-              Начать тренировку
+        {/* Кот на кнопке старта — та же формула позиции, что в ProgressScreen */}
+        {(['loaf', 'mat', 'sleepy', 'wrecked'] as CatName[]).map((name) => {
+          const size = 60
+          return (
+            <div key={name} className="relative pt-8">
+              <span
+                className="pointer-events-none absolute left-4 z-10"
+                style={{ top: 32 + (14 - size * catAspect(name)) }}
+              >
+                <CatArt name={name} size={size} />
+              </span>
+              <div className="flex min-h-[56px] items-center justify-center gap-2 rounded-xl bg-brand px-6 text-lg font-extrabold text-white">
+                Начать тренировку
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="mt-6 flex flex-wrap items-start gap-6">
         {/* Панель отдыха с котом */}
         <div className="flex items-center gap-3 rounded-2xl bg-butter p-3">
-          <CatArt name="loaf" size={46} />
+          <span className="flex w-[40px] items-center justify-center">
+            <CatArt name="loaf" size={72} />
+          </span>
           <span className="font-display text-2xl font-extrabold text-ink-strong">1:12</span>
           <span className="text-sm font-bold text-ink">Отдых</span>
         </div>
