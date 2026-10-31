@@ -53,6 +53,61 @@ function useParallax(ref: React.RefObject<HTMLSpanElement | null>, factor: numbe
   return drift
 }
 
+// След за пальцем/мышью: кот слегка тянется к точке ввода. Слушаем window,
+// поэтому работает и на pointer-events-none котах (кнопка старта), и на
+// экранах без скролла — там чистый scroll-параллакс не виден вовсе.
+function usePointerDrift(
+  ref: React.RefObject<HTMLSpanElement | null>,
+  factor: number,
+  enabled: boolean,
+): { x: number; y: number } {
+  const [drift, setDrift] = useState({ x: 0, y: 0 })
+  const current = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    if (!factor || !enabled) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return
+    let raf = 0
+    const onMove = (e: PointerEvent) => {
+      if (raf) return
+      const { clientX, clientY } = e
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        const el = ref.current
+        if (!el) return
+        const r = el.getBoundingClientRect()
+        // центр минус текущий дрейф — иначе getBoundingClientRect даёт обратную связь
+        const cx = r.left + r.width / 2 - current.current.x
+        const cy = r.top + r.height / 2 - current.current.y
+        const clamp = (v: number) => Math.max(-10, Math.min(10, v))
+        const nx = clamp(-(clientX - cx) * factor)
+        const ny = clamp(-(clientY - cy) * factor)
+        setDrift((prev) =>
+          Math.abs(prev.x - nx) < 0.5 && Math.abs(prev.y - ny) < 0.5 ? prev : { x: nx, y: ny },
+        )
+      })
+    }
+    const onLeave = () => {
+      if (raf) cancelAnimationFrame(raf)
+      raf = 0
+      setDrift({ x: 0, y: 0 })
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    document.documentElement.addEventListener('pointerleave', onLeave)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      document.documentElement.removeEventListener('pointerleave', onLeave)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [ref, factor, enabled])
+
+  useEffect(() => {
+    current.current = drift
+  }, [drift])
+
+  return drift
+}
+
 export function CatArt({
   name,
   size = 96,
@@ -65,36 +120,50 @@ export function CatArt({
   const cat = registry[name]
   const height = Math.round(size * cat.aspect)
   const [wiggling, setWiggling] = useState(false)
+  const wiggleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ref = useRef<HTMLSpanElement | null>(null)
-  const drift = useParallax(ref, parallax, animated)
+  const scrollDrift = useParallax(ref, parallax, animated)
+  const pointer = usePointerDrift(ref, parallax, animated)
+
+  useEffect(
+    () => () => {
+      if (wiggleTimer.current !== null) clearTimeout(wiggleTimer.current)
+    },
+    [],
+  )
+
+  // Сброс двойной страховкой: onAnimationEnd (реальные браузеры) + таймер
+  // на случай, когда animationend не долетел (некоторые окружения тестов).
+  const startWiggle = () => {
+    setWiggling(false)
+    requestAnimationFrame(() => {
+      setWiggling(true)
+      catHaptic('tap')
+      if (wiggleTimer.current !== null) clearTimeout(wiggleTimer.current)
+      wiggleTimer.current = setTimeout(() => setWiggling(false), 550)
+    })
+  }
+  const translateY = Math.round(scrollDrift + pointer.y)
   const imgClasses = [animated ? cat.anim : undefined, pop && animated ? 'cat-pop' : undefined]
     .filter(Boolean)
     .join(' ')
+  // ВАЖНО: всегда строка (не undefined) — иначе React пропустит обновление
+  // className и класс cat-wiggle останется навсегда, ломая повторные тапы
+  const wrapperClasses = [className, wiggling ? 'cat-wiggle' : ''].filter(Boolean).join(' ')
   return (
     <span
       ref={ref}
-      className={[className, wiggling ? 'cat-wiggle' : undefined].filter(Boolean).join(' ') || undefined}
+      className={wrapperClasses}
       style={{
         position: 'relative',
         display: 'inline-block',
         width: size,
         height,
-        transform: drift ? `translateY(${Math.round(drift)}px)` : undefined,
+        transform: `translate3d(${Math.round(pointer.x)}px, ${translateY}px, 0)`,
         transition: 'transform 150ms ease-out',
       }}
       aria-hidden="true"
-      onPointerDown={
-        wiggle && animated
-          ? () => {
-              // перезапуск анимации, если прошлый wiggle ещё не закончился
-              setWiggling(false)
-              requestAnimationFrame(() => {
-                setWiggling(true)
-                catHaptic('tap')
-              })
-            }
-          : undefined
-      }
+      onPointerDown={wiggle && animated ? startWiggle : undefined}
       onAnimationEnd={() => setWiggling(false)}
     >
       <img

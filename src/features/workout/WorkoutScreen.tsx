@@ -117,7 +117,7 @@ function SummaryScreen({
   return (
     <div className="flex flex-col">
       {/* joy вытянутый вверх — берём меньше, чтобы резюме не расползалось */}
-      <CatArt name={cat} size={cat === 'joy' ? 118 : 156} pop />
+      <CatArt name={cat} size={cat === 'joy' ? 118 : 156} pop parallax={0.12} wiggle />
       {prs > 0 && (
         <p className="text-center text-sm font-extrabold text-brand">
           Личных рекордов: {prs} — план перезапишется сам
@@ -494,9 +494,9 @@ function RestBar({
   return (
     <div className="fixed inset-x-0 bottom-[calc(53px+env(safe-area-inset-bottom))] z-20 px-4">
       <div className="card-shadow mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-butter p-3">
-        {/* Кот по высоте ~48px: лежебока широкая, повязка вертикальная */}
+        {/* Кот по высоте ~48px: лежебока широкая, повязка вертикальная. Тап — wiggle */}
         <span className="flex w-[48px] shrink-0 items-center justify-center">
-          <CatArt name={done ? 'band' : 'loaf'} size={done ? 44 : 60} />
+          <CatArt name={done ? 'band' : 'loaf'} size={done ? 44 : 60} wiggle />
         </span>
         <span
           className={`font-display tabular text-2xl font-extrabold ${

@@ -527,6 +527,19 @@
       </div>
     </div>
 
+    <!-- Фикс: интерактив котов · 1 ноя 2026 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel butter">
+          <div class="num"><span class="pill">Фикс</span></div>
+          <h3>Интерактив котов стал видимым</h3>
+          <p>Wiggle и параллакс из прошлого релиза жили только в пустых состояниях, а у рабочего пользователя их нет — интерактив был невидимкой. Теперь: wiggle у кота в панели отдыха и в резюме, параллакс у кота на кнопке старта (слушает window — работает даже через pointer-events-none), плюс лёгкий <strong>след за пальцем</strong>, видимый без всякого скролла. И регресс-фикс: класс cat-wiggle залипал навсегда, если animationend не приходил — повторные тапы не перезапускали анимацию; сброс теперь дублирован таймером и покрыт тестами.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Кот тапается там, где его реально видно</div>
+        </div>
+      </div>
+    </div>
+
     <!-- next -->
     <div class="col">
       <div class="dot" style="border-style:dashed"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="#2a2f5a"/></svg></div>

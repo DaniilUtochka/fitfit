@@ -112,7 +112,8 @@ function StartWorkoutButton({ cat }: { cat: CatName }) {
         className="pointer-events-none absolute left-4"
         style={{ top: 14 - size * catAspect(cat) }}
       >
-        <CatArt name={cat} size={size} />
+        {/* parallax слушает window — работает и с pointer-events-none */}
+        <CatArt name={cat} size={size} parallax={0.08} />
       </span>
       <Paw size={22} />
       Начать тренировку
