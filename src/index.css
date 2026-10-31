@@ -161,6 +161,36 @@
     transform: translate(3px, 14px) rotate(160deg);
   }
 }
+/* cats v2: pop-появление на пустых состояниях и wiggle по тапу */
+@keyframes cat-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes cat-wiggle-anim {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
 
 .cat-float {
   animation: cat-float 3.4s ease-in-out infinite;
@@ -192,6 +222,15 @@
   transform-box: fill-box;
   animation: cat-confetti-fall 1.9s ease-in 2 forwards;
 }
+.cat-pop {
+  animation: cat-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+/* wiggle вешается на обёртку (CatArt span): на время анимации transform
+   вытесняет параллакс-сдвиг, поэтому начало с нулевого поворота */
+.cat-wiggle {
+  transform-origin: 50% 92%;
+  animation: cat-wiggle-anim 0.5s ease-in-out 1;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .cat-float,
@@ -201,7 +240,9 @@
   .cat-zzz,
   .cat-zzz-2,
   .cat-jump,
-  .cat-confetti {
+  .cat-confetti,
+  .cat-pop,
+  .cat-wiggle {
     animation: none;
   }
 }

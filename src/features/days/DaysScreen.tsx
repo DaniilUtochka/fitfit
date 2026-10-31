@@ -39,7 +39,7 @@ export function DaysScreen() {
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <CatArt name="mat" size={108} />
+          <CatArt name="mat" size={108} pop parallax={0.12} wiggle />
           <p className="font-bold text-ink">Пока пусто</p>
           <p className="text-sm text-muted">Создай первый день в форме выше</p>
         </div>

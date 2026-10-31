@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitFit · Ретроспектива</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff6e8;
+    --paper: #fffaf2;
+    --surface: #ffffff;
+    --lilac: #ede4ff;
+    --sky: #e3f1ff;
+    --mint: #e6f7ef;
+    --butter: #fff0b8;
+    --blush: #ffe3ec;
+    --ink: #2a2f5a;
+    --ink-soft: rgba(42, 47, 90, .72);
+    --line: #e7dccb;
+    --line-2: #d9cdb8;
+    --brand: #c93468;
+    --r-lg: 22px;
+    --r-md: 14px;
+    --shadow: 0 10px 24px -18px rgba(42, 47, 90, .35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  h1, h2, h3, .num { font-family: 'Rubik', sans-serif; }
+
+  /* ── Шапка ─────────────────────────────────────────── */
+  header {
+    padding: 28px 36px 8px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .logo {
+    width: 72px; height: 72px;
+    background: var(--lilac);
+    border-radius: 24px;
+    display: grid; place-items: center;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+  .logo svg { width: 52px; height: 52px; }
+  .titles h1 { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+  .titles p { color: var(--ink-soft); font-size: 15px; margin-top: 4px; font-weight: 600; }
+  .titles .tagline { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12.5px; font-weight: 800;
+    font-family: 'Rubik', sans-serif;
+    letter-spacing: .01em;
+  }
+  .badge.mint  { background: var(--mint);  color: #1e7a52; }
+  .badge.blush { background: var(--blush); color: var(--brand); }
+  .badge.sky   { background: var(--sky);   color: #2b6cb0; }
+
+  /* ── Таймлайн ──────────────────────────────────────── */
+  .timeline-wrap { position: relative; flex: 1; min-height: 0; }
+
+  .track {
+    position: absolute; inset: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+    padding: 26px 36px 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 26px;
+  }
+  .track::-webkit-scrollbar { height: 8px; }
+  .track::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; }
+  .track::-webkit-scrollbar-track { background: transparent; }
+
+  /* сплошная линия-«лента» под карточками */
+  .rail {
+    position: absolute;
+    left: 0; right: 0;
+    top: 96px;
+    height: 6px;
+    background: repeating-linear-gradient(90deg,
+      var(--line-2) 0 14px, transparent 14px 26px);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 300px;
+  }
+  .dot {
+    position: relative;
+    z-index: 1;
+    width: 26px; height: 26px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 4px solid var(--line-2);
+    margin-bottom: 18px;
+    display: grid; place-items: center;
+  }
+  .dot svg { width: 12px; height: 12px; }
+  .col.milestone .dot { border-color: var(--brand); background: var(--brand); }
+  .col.pivot .dot     { border-color: #d9a40e; background: #f5c518; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+    padding: 22px 22px 20px;
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card .panel {
+    border-radius: var(--r-md);
+    padding: 16px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .panel.lilac  { background: var(--lilac); }
+  .panel.sky    { background: var(--sky); }
+  .panel.mint   { background: var(--mint); }
+  .panel.butter { background: var(--butter); }
+  .panel.blush  { background: var(--blush); }
+
+  .num {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .num .pill {
+    background: var(--surface);
+    border: 2px dashed var(--line-2);
+    padding: 2px 10px;
+    border-radius: 999px;
+    color: var(--ink);
+    font-size: 12px;
+  }
+  .card h3 { font-size: 19px; font-weight: 700; line-height: 1.25; }
+  .card p  { font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); font-weight: 600; }
+  .card p strong { color: var(--ink); }
+  .check {
+    margin-top: auto;
+    padding-top: 10px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+    border-top: 2px dashed rgba(42, 47, 90, .14);
+  }
+  .check svg { flex-shrink: 0; margin-top: 1px; }
+
+  .milestone-ribbon {
+    position: absolute;
+    top: 14px; right: -6px;
+    transform: rotate(8deg);
+    background: var(--brand);
+    color: #fff;
+    font-family: 'Rubik', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+  .card.milestone { border: 2.5px solid var(--brand); }
+  .card.pivot { border: 2.5px dashed #d9a40e; }
+
+  .cat-note {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+    background: rgba(255,255,255,.6);
+    border-radius: var(--r-md);
+    padding: 8px 12px;
+    margin-top: 4px;
+  }
+  .cat-note svg { flex-shrink: 0; }
+
+  /* ── Низ ───────────────────────────────────────────── */
+  footer {
+    flex-shrink: 0;
+    padding: 10px 36px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stat b { font-family: 'Rubik', sans-serif; font-size: 16px; color: var(--ink); }
+
+  .nav-btns { display: flex; gap: 10px; }
+  .nav-btn {
+    width: 48px; height: 48px;
+    border-radius: 999px;
+    border: none;
+    background: var(--surface);
+    color: var(--brand);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  .nav-btn:hover { transform: scale(1.06); }
+  .nav-btn:active { transform: scale(.94); }
+  .nav-btn:disabled { opacity: .35; cursor: default; transform: none; }
+  .nav-btn svg { width: 22px; height: 22px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <!-- кот на lilac, как иконка приложения -->
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M14 26 L10 12 L23 19 Z" fill="#fff" stroke="#d9cdb8" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M50 26 L54 12 L41 19 Z" fill="#fff" stroke="#d9cdb8" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="32" cy="36" r="21" fill="#fff" stroke="#d9cdb8" stroke-width="2.5"/>
+      <circle cx="25" cy="34" r="2.6" fill="#2a2f5a"/>
+      <circle cx="39" cy="34" r="2.6" fill="#2a2f5a"/>
+      <path d="M29 41 q3 3 6 0" stroke="#2a2f5a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <circle cx="19" cy="41" r="3" fill="#c93468" opacity=".28"/>
+      <circle cx="45" cy="41" r="3" fill="#c93468" opacity=".28"/>
+    </svg>
+  </div>
+  <div class="titles">
+    <h1>FitFit — как мы сюда пришли</h1>
+    <p>Ретроспектива бэклога: от пустого репозитория до PWA-трекера тренировок в кармане. Слева направо — в порядке реальной работы.</p>
+    <div class="tagline">
+      <span class="badge blush">♥ MVP закрыт</span>
+      <span class="badge mint">✓ 15 итераций</span>
+      <span class="badge sky">телефон → зал → база</span>
+    </div>
+  </div>
+</header>
+
+<div class="timeline-wrap">
+  <div class="rail"></div>
+  <div class="track" id="track">
+
+    <!-- 0 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 0</span></div>
+          <h3>Ходячий скелет</h3>
+          <p>Vite + React + TS, проект Supabase, деплой на Vercel, PWA-манифест. Пока заглушка — но уже на телефоне.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Открыл с айфона, добавил на главный экран</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 1</span></div>
+          <h3>Auth через Google</h3>
+          <p>OAuth, долгоживущая сессия, роутинг «не залогинен → логин». RLS: чужой anon-запрос получает пустоту.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Вошёл — через день всё ещё внутри</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 2</span></div>
+          <h3>Справочник упражнений</h3>
+          <p>Имя, группы мышц (глобальный справочник), bodyweight-флаг, заметка, видео, архив вместо удаления.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Завёл свои упражнения с телефона</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 3</span></div>
+          <h3>Конструктор дней</h3>
+          <p>Собери день: упражнения с планом «подходы × повторы × вес», порядок, правка веса руками (деволоад).</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Реальный Push-день собран за &lt; 5 минут</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 milestone -->
+    <div class="col milestone">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M11 6 A5 5 0 1 0 6 11 L6 6 Z" fill="#fff"/></svg></div>
+      <div class="card milestone" style="position:relative">
+        <div class="milestone-ribbon">Milestone 1</div>
+        <div class="panel mint">
+          <div class="num"><span class="pill">Слайс 4</span></div>
+          <h3>Тренировка v0</h3>
+          <p>Старт выбором дня → тап = подход, сразу в базу → завершение сессии. Восстановление активной сессии при перезаходе.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#fff"/><path d="M4 7 l2 2 4-4.5" stroke="#c93468" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg><span>Провёл тренировку в зале только с приложением — <strong>гугл-док больше не нужен</strong></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 5</span></div>
+          <h3>Прогрессия (ratchet)</h3>
+          <p>«Прошлый раз» рядом с каждым упражнением, ratchet: план двигается <strong>только вверх</strong>. Резюме при завершении, пропуск и внеплановый подход. Плюс vitest и первые тесты.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Поднял вес — в следующий раз приложение само предложило новый</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- pivot -->
+    <div class="col pivot">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M3 2 v6 a2 2 0 0 0 2 2 h4 M9 10 l-2-2 M9 10 l-2 2" stroke="#2a2f5a" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card pivot">
+        <div class="panel butter">
+          <div class="num"><span class="pill">Разворот</span></div>
+          <h3>Бэклог перестроен</h3>
+          <p>Старые 6–8 (История, Расписание, полировка) стали 9–11. Вместо них — то, что болело прямо сейчас: <strong>редизайн, импорт программы, разгрузка меню</strong>.</p>
+          <div class="cat-note">
+            <svg width="26" height="26" viewBox="0 0 64 64" fill="none"><path d="M20 28 L17 17 L27 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><path d="M44 28 L47 17 L37 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="38" r="17" fill="#fff" stroke="#d9cdb8" stroke-width="3"/><circle cx="26.5" cy="36" r="2.2" fill="#2a2f5a"/><circle cx="37.5" cy="36" r="2.2" fill="#2a2f5a"/><path d="M29 42 q3 2.5 6 0" stroke="#2a2f5a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+            «Сначала сделаем красиво, потом уже историю»
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Слайс 6</span></div>
+          <h3>Редизайн «kawaii»</h3>
+          <p>Кремовая тема, пастельные панели, Rubik + Nunito, радиусы 22px, мягкие тени — и <strong>котики</strong>: SVG-кот и лапки на пустых состояниях. Дизайн-система в DESIGN.md.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>В зале всё читается, тёмно-светлой каши нет</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Слайс 7</span></div>
+          <h3>Импорт программы</h3>
+          <p>Программа PPL из Google-таблицы: ~15 упражнений, Push / Pull / Legs, веса из названий — нижняя граница диапазона в план. Гребной — «минуты» в заметке.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Три дня с полным планом — можно сразу стартовать</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Слайс 8</span></div>
+          <h3>Таб «Ещё»</h3>
+          <p>Справочник уходит из нижнего меню: на тренировке он только мешал. Добавление в день работает из редактора как раньше.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Меню на тренировке: только нужное</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel mint">
+          <div class="num"><span class="pill">Слайс 12</span></div>
+          <h3>Фокус-режим тренировки</h3>
+          <p>Пейджер: одно упражнение на экран, без прыжков. Таймер отдыха 90с с автостартом, «+30с», бип в конце. Отмена тренировки, пока сделано &lt; 20% плана.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Весь цикл «тап → отдых → следующий подход» без скролла</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 milestone -->
+    <div class="col milestone">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M11 6 A5 5 0 1 0 6 11 L6 6 Z" fill="#fff"/></svg></div>
+      <div class="card milestone" style="position:relative">
+        <div class="milestone-ribbon">Milestone 2</div>
+        <div class="panel mint">
+          <div class="num"><span class="pill">Слайс 9</span></div>
+          <h3>История · MVP закрыт</h3>
+          <p>Список сессий по датам, детали сессии, «последние результаты» прямо в редакторе дня. Все must из PRD — сделаны.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#fff"/><path d="M4 7 l2 2 4-4.5" stroke="#c93468" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Нашёл, что делал две недели назад, за &lt; 10 секунд</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel sky">
+          <div class="num"><span class="pill">Слайс 11</span></div>
+          <h3>PWA-полировка</h3>
+          <p>Kawaii-иконка (кот на lilac) вместо индиго-логотипа, iOS-сплеши в кремовых цветах, честная ошибка при потере сети — офлайн-тап не теряется молча.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Иконка на главном экране айфона выглядит прилично</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Слайс 13</span></div>
+          <h3>Прогресс</h3>
+          <p>Мотивирующие цифры: герой «+дни жизни» с раскрышкой формулы, тоннаж и время в зале, стрик недель, бары тоннажа, рекорды. Честная карточка «Про Паркинсон» — без выдуманных процентов. 50 unit-тестов на формулы.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Живые цифры по реальным тренировкам</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Слайс 14</span></div>
+          <h3>Прогресс — главный экран</h3>
+          <p>«/» сразу открывает Прогресс с большой кнопкой «Начать тренировку». Нижнее меню удалено — вместо него плавающий кружок профиля: email, «Выйти» и все разделы в выпадашке.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Открыл приложение — сразу Прогресс, кружок не мешает на тренировке</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PWA update fix -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel butter">
+          <div class="num"><span class="pill">Фикс</span></div>
+          <h3>Обновления без боли</h3>
+          <p>Деплой уходит, а телефон подолгу показывал старое: iOS держит PWA в памяти днями. Теперь новый service worker перезагружает страницу сам, проверка — при каждом возврате в приложение.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Открыл приложение → видишь свежую версию</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Коты v2 · 1 ноя 2026 -->
+    <div class="col">
+      <div class="dot"><svg viewBox="0 0 12 12"><path d="M2 6 l3 3 5-6" stroke="#2a2f5a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="card">
+        <div class="panel lilac">
+          <div class="num"><span class="pill">Релиз · 1 ноя 2026</span></div>
+          <h3>Коты v2: новый каст маскотов</h3>
+          <p>Все 7 спрайтов перегенерированы в Gemini по старому референсу — те же персонажи, но с богатой детализацией: ~500px WebP с альфой вместо 155–232px. Коты на экранах стали <strong>+30–40% крупнее</strong> (пустые состояния 110→148px). Плюс полировка анимаций: pop-появление на пустых состояниях, параллакс по скроллу, wiggle по тапу на декоративных котах, haptic-отклик на событийных (vibrate, no-op на iOS). Скрипты вырезки фона — в scripts/extract-cats-v2.py, исходники — в scripts/cats-v2-source/. По правилу из CLAUDE.md эта ретроспектива теперь пополняется после каждого релиза.</p>
+          <div class="check"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#e6f7ef"/><path d="M4 7 l2 2 4-4.5" stroke="#1e7a52" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Проверено с айфона: «круто, очень классные анимации»</div>
+          <div class="cat-note">
+            <svg width="26" height="26" viewBox="0 0 64 64" fill="none"><path d="M20 28 L17 17 L27 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><path d="M44 28 L47 17 L37 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="38" r="17" fill="#fff" stroke="#d9cdb8" stroke-width="3"/><circle cx="26.5" cy="36" r="2.2" fill="#2a2f5a"/><circle cx="37.5" cy="36" r="2.2" fill="#2a2f5a"/><path d="M29 42 q3 2.5 6 0" stroke="#2a2f5a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+            Каст v2: те же коты, но в разрешении, которое не стыдно
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- next -->
+    <div class="col">
+      <div class="dot" style="border-style:dashed"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="2" fill="#2a2f5a"/></svg></div>
+      <div class="card">
+        <div class="panel blush">
+          <div class="num"><span class="pill">Дальше</span></div>
+          <h3>Слайс 10 · Расписание</h3>
+          <p>День недели → тип дня: «сегодня по расписанию — Push» прямо на главном, старт в один тап. Единственный [should], оставшийся в бэклоге.</p>
+          <div class="cat-note">
+            <svg width="26" height="26" viewBox="0 0 64 64" fill="none"><path d="M20 28 L17 17 L27 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><path d="M44 28 L47 17 L37 23 Z" fill="#fff" stroke="#d9cdb8" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="38" r="17" fill="#fff" stroke="#d9cdb8" stroke-width="3"/><circle cx="26.5" cy="36" r="2.2" fill="#2a2f5a"/><circle cx="37.5" cy="36" r="2.2" fill="#2a2f5a"/><path d="M29 42 q3 2.5 6 0" stroke="#2a2f5a" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+            А в парковке ждут графики, пуши и LLM-аналитика
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="stats">
+    <div class="stat"><b>15</b> итераций от скелета до продукта</div>
+    <div class="stat"><b>2</b> milestone: гугл-док → MVP</div>
+    <div class="stat"><b>86</b> тестов, чек зелёный перед каждым мержем</div>
+    <div class="stat"><b>0</b> серверного кода: только фронт + RLS</div>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prev" aria-label="Назад">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M14 6 l-6 6 6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="nav-btn" id="next" aria-label="Вперёд">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M10 6 l6 6 -6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</footer>
+
+<script>
+  const track = document.getElementById('track');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const step = () => (track.querySelector('.col')?.offsetWidth ?? 300) + 26;
+
+  prev.addEventListener('click', () => track.scrollBy({ left: -step() * 2, behavior: 'smooth' }));
+  next.addEventListener('click', () => track.scrollBy({ left: step() * 2, behavior: 'smooth' }));
+
+  function syncBtns() {
+    prev.disabled = track.scrollLeft <= 2;
+    next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2;
+  }
+  track.addEventListener('scroll', syncBtns);
+  window.addEventListener('resize', syncBtns);
+  syncBtns();
+
+  // драг мышью — таймлайн листается как лента
+  let down = false, startX = 0, startLeft = 0, moved = false;
+  track.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    down = true; moved = false;
+    startX = e.clientX; startLeft = track.scrollLeft;
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    track.scrollLeft = startLeft - dx;
+  });
+  window.addEventListener('pointerup', () => { down = false; });
+  track.addEventListener('click', (e) => { if (moved) e.preventDefault(); }, true);
+</script>
+
+</body>
+</html>

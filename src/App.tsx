@@ -230,7 +230,7 @@ function BrandMark() {
       className="card-shadow mb-4 grid size-[112px] place-items-center rounded-[28px] bg-lilac"
       aria-hidden="true"
     >
-      <CatArt name="band" size={114} />
+      <CatArt name="band" size={114} pop />
     </div>
   )
 }

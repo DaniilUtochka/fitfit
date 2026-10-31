@@ -4,6 +4,7 @@ import { useExercises } from '../exercises/api'
 import { Paw } from '../../components/cat'
 import { CatArt } from '../../components/cats'
 import { markWorkoutFinished } from '../../lib/mascot'
+import { catHaptic } from '../../lib/haptics'
 import {
   useActiveSession,
   useCancelWorkout,
@@ -49,7 +50,7 @@ function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
     <p className="text-danger">{text}</p>
   ) : (
     <div className="flex flex-col items-center gap-2 py-8">
-      <CatArt name="sleepy" size={148} />
+      <CatArt name="sleepy" size={148} pop wiggle />
       <p className="font-bold text-muted">{text}</p>
     </div>
   )
@@ -73,7 +74,7 @@ function DayChooser() {
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <CatArt name="dumbbell" size={108} />
+          <CatArt name="dumbbell" size={108} pop wiggle />
           <p className="font-bold text-ink">Дней пока нет</p>
           <p className="text-sm text-muted">Собери первый день в разделе «Дни»</p>
         </div>
@@ -113,10 +114,15 @@ function SummaryScreen({
   const { summary, prs } = result
   const allDone = summary.doneSets >= summary.plannedSets
   const cat = prs > 0 ? 'joy' : allDone ? 'band' : 'wrecked'
+  // Тактильный отклик при показе резюме (cats v2): паттерн — от характера кота.
+  // На iOS vibrate нет — тихий no-op (src/lib/haptics.ts).
+  useEffect(() => {
+    catHaptic(cat === 'joy' ? 'pr' : cat === 'band' ? 'done' : 'wrecked')
+  }, [cat])
   return (
     <div className="flex flex-col">
       {/* joy вытянутый вверх — берём меньше, чтобы резюме не расползалось */}
-      <CatArt name={cat} size={cat === 'joy' ? 118 : 156} />
+      <CatArt name={cat} size={cat === 'joy' ? 118 : 156} pop />
       {prs > 0 && (
         <p className="text-center text-sm font-extrabold text-brand">
           Личных рекордов: {prs} — план перезапишется сам
