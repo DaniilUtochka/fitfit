@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CatArt } from '../../components/cats'
+import { SkeletonList } from '../../components/Skeleton'
 import {
   useArchiveDayTemplate,
   useCreateDayTemplate,
@@ -34,7 +35,7 @@ export function DaysScreen() {
       </div>
 
       {days.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <SkeletonList rows={3} />
       ) : days.isError ? (
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (

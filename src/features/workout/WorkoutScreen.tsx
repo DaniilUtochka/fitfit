@@ -5,6 +5,7 @@ import { Paw } from '../../components/cat'
 import { CatArt } from '../../components/cats'
 import { markWorkoutFinished } from '../../lib/mascot'
 import { catHaptic } from '../../lib/haptics'
+import { Skeleton, SkeletonList } from '../../components/Skeleton'
 import {
   useActiveSession,
   useCancelWorkout,
@@ -35,7 +36,7 @@ export function WorkoutScreen() {
   const [result, setResult] = useState<{ summary: WorkoutSummary; prs: number } | null>(null)
 
   if (result) return <SummaryScreen result={result} onDone={() => setResult(null)} />
-  if (active.isPending) return <CenterMsg text="Загрузка…" />
+  if (active.isPending) return <SkeletonList rows={4} />
   if (active.isError) return <CenterMsg text={`Ошибка: ${(active.error as Error).message}`} danger />
 
   return active.data ? (
@@ -46,14 +47,8 @@ export function WorkoutScreen() {
 }
 
 function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
-  return danger ? (
-    <p className="text-danger">{text}</p>
-  ) : (
-    <div className="flex flex-col items-center gap-2 py-8">
-      <CatArt name="sleepy" size={148} pop wiggle />
-      <p className="font-bold text-muted">{text}</p>
-    </div>
-  )
+  // Кот-«грузится» ушёл в скелетоны; CenterMsg остался только для ошибок.
+  return <p className={danger ? 'text-danger' : 'text-muted'}>{text}</p>
 }
 
 // ── Нет активной тренировки: выбор дня ────────────────────────────────────────────────
@@ -69,7 +64,7 @@ function DayChooser() {
       <h2 className="mt-2 mb-2 text-sm font-bold text-muted uppercase">Выбери день</h2>
 
       {days.isPending ? (
-        <CenterMsg text="Загрузка…" />
+        <SkeletonList rows={3} />
       ) : days.isError ? (
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
@@ -209,7 +204,7 @@ function ActiveWorkout({
     finish.mutate(session.id, { onSuccess: () => onFinished({ summary, prs }) })
   }
 
-  if (plan.isPending || sets.isPending) return <CenterMsg text="Загрузка…" />
+  if (plan.isPending || sets.isPending) return <SkeletonList rows={4} />
   if (plan.isError) return <p className="text-danger">Ошибка: {(plan.error as Error).message}</p>
   if (sets.isError) return <p className="text-danger">Ошибка: {(sets.error as Error).message}</p>
 
@@ -884,7 +879,7 @@ function AddExerciseSection({
     <section className="mt-4">
       <h2 className="mb-2 text-sm font-bold text-muted uppercase">Добавить упражнение</h2>
       {ex.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <Skeleton className="h-[44px] w-full rounded-xl" />
       ) : ex.isError ? (
         <p className="text-danger">Ошибка: {(ex.error as Error).message}</p>
       ) : options.length === 0 ? (

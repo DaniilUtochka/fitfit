@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Paw } from '../../components/cat'
 import { CatArt, catAspect, type CatName } from '../../components/cats'
+import { Skeleton } from '../../components/Skeleton'
 import { consumeAppUpdated, pickCtaCat, readFinishedAt } from '../../lib/mascot'
 import { useProgressData, type ProgressData } from './api'
 import { formatDateShort } from '../history/logic'
@@ -51,11 +52,15 @@ export function ProgressScreen() {
 
   let body: React.ReactNode
   if (query.isPending) {
+    // Скелетон повторяет геометрию FullProgress: заголовок, hero, факты, бары —
+    // подмена на данные проходит без «прыжка» каркаса.
     body = (
-      <StatePanel>
-        <CatArt name="sleepy" size={148} pop wiggle />
-        <p className="font-bold text-muted">Считаю твой прогресс…</p>
-      </StatePanel>
+      <div className="flex flex-col gap-3.5">
+        <Skeleton className="mb-1 h-9 w-44 rounded-xl" />
+        <Skeleton className="h-[124px] w-full rounded-2xl" />
+        <Skeleton className="h-[112px] w-full rounded-2xl" />
+        <Skeleton className="h-[150px] w-full rounded-2xl" />
+      </div>
     )
   } else if (query.isError) {
     body = (

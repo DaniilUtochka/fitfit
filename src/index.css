@@ -78,6 +78,28 @@
   }
 }
 
+/* Скелетоны загрузки: пульс; форму/цвет вызывающий (bg — border на креме).
+   reduced-motion: пульс выключен, блок остаётся статичной заглушкой. */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.skeleton {
+  background: var(--color-border);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
 /* ── Коты-маскоты (слайс 15): анимация спрайтов ────────────────────────────────
    Коты — вырезки из референса (scripts/extract-cats.py, WebP с альфой),
    анимируется вся картинка классом (.cat-float, .cat-breathe …).

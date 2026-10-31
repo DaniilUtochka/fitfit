@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { CatArt } from '../../components/cats'
+import { Skeleton, SkeletonList } from '../../components/Skeleton'
 import { useExercises } from '../exercises/api'
 import {
   useAddTemplateExercise,
@@ -26,7 +27,10 @@ export function DayEditorScreen() {
       </Link>
 
       {day.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-8 w-2/3 rounded-xl" />
+          <SkeletonList rows={4} />
+        </div>
       ) : day.isError ? (
         <p className="text-danger">Ошибка: {(day.error as Error).message}</p>
       ) : (

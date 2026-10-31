@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router'
 import { Paw } from '../../components/cat'
 import { CatArt } from '../../components/cats'
+import { Skeleton } from '../../components/Skeleton'
 import { useHistorySession, type HistorySetRow } from './api'
 import type { TemplateExerciseWithExercise } from '../days/api'
 import { formatDateShort } from './logic'
@@ -18,9 +19,10 @@ export function HistoryDetailScreen() {
       </Link>
 
       {session.isPending ? (
-        <div className="flex flex-col items-center gap-2 py-8">
-          <CatArt name="sleepy" size={148} pop wiggle />
-          <p className="font-bold text-muted">Загрузка…</p>
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-8 w-2/3 rounded-xl" />
+          <Skeleton className="h-[120px] w-full rounded-2xl" />
+          <Skeleton className="h-[120px] w-full rounded-2xl" />
         </div>
       ) : session.isError ? (
         <p className="text-danger">Ошибка: {(session.error as Error).message}</p>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CatArt } from '../../components/cats'
+import { SkeletonList } from '../../components/Skeleton'
 import {
   useArchiveExercise,
   useCreateExercise,
@@ -35,7 +36,7 @@ export function ExercisesScreen() {
       </div>
 
       {exercises.isPending ? (
-        <p className="text-muted">Загрузка…</p>
+        <SkeletonList rows={6} />
       ) : exercises.isError ? (
         <p className="text-danger">Ошибка: {(exercises.error as Error).message}</p>
       ) : exercises.data.length === 0 ? (
