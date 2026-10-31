@@ -25,11 +25,11 @@ export function MascotGallery() {
             <p className="mb-3 text-xs text-muted">{c.role}</p>
             <div className="grid grid-cols-2 items-end gap-2">
               <div className="flex flex-col items-center gap-1">
-                <CatArt name={c.name} size={90} animated={false} />
+                <CatArt name={c.name} size={120} animated={false} />
                 <span className="text-[10px] text-muted">статика</span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <CatArt name={c.name} size={90} />
+                <CatArt name={c.name} size={120} />
                 <span className="text-[10px] text-muted">анимация</span>
               </div>
             </div>
@@ -41,7 +41,7 @@ export function MascotGallery() {
       <div className="mt-4 flex flex-wrap gap-6">
         {/* Кот на кнопке старта — та же формула позиции, что в ProgressScreen */}
         {(['loaf', 'mat', 'sleepy', 'wrecked'] as CatName[]).map((name) => {
-          const size = 60
+          const size = 80
           return (
             <div key={name} className="relative pt-8">
               <span
@@ -61,8 +61,8 @@ export function MascotGallery() {
       <div className="mt-6 flex flex-wrap items-start gap-6">
         {/* Панель отдыха с котом */}
         <div className="flex items-center gap-3 rounded-2xl bg-butter p-3">
-          <span className="flex w-[40px] items-center justify-center">
-            <CatArt name="loaf" size={72} />
+          <span className="flex w-[48px] items-center justify-center">
+            <CatArt name="loaf" size={60} />
           </span>
           <span className="font-display text-2xl font-extrabold text-ink-strong">1:12</span>
           <span className="text-sm font-bold text-ink">Отдых</span>
@@ -70,7 +70,7 @@ export function MascotGallery() {
         {/* Меню профиля с выглядывающим котом */}
         <div className="relative w-[280px] rounded-2xl bg-surface p-2 card-shadow">
           <span className="pointer-events-none absolute -top-5 left-3 -rotate-[10deg]">
-            <CatArt name="dumbbell" size={34} />
+            <CatArt name="dumbbell" size={46} />
           </span>
           <p className="px-3 py-2 text-sm text-muted">dan@gmail.com</p>
           <p className="px-3 py-2 font-bold text-ink-strong">Прогресс</p>

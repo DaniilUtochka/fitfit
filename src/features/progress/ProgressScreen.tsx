@@ -53,14 +53,14 @@ export function ProgressScreen() {
   if (query.isPending) {
     body = (
       <StatePanel>
-        <CatArt name="sleepy" size={110} />
+        <CatArt name="sleepy" size={148} />
         <p className="font-bold text-muted">Считаю твой прогресс…</p>
       </StatePanel>
     )
   } else if (query.isError) {
     body = (
       <StatePanel>
-        <CatArt name="wrecked" size={80} />
+        <CatArt name="wrecked" size={108} />
         <p className="font-bold text-ink">Не смог посчитать прогресс</p>
         <button
           onClick={() => void query.refetch()}
@@ -97,7 +97,7 @@ function lastSessionEnd(sessions: ProgressData['sessions'] | undefined): number 
 // краю кнопки: pointer-events-none, тап-таргет не меняет, котом не является.
 // Верх считаем из аспекта спрайта, чтобы низ кота всегда был на 14px внутри кнопки.
 function StartWorkoutButton({ cat }: { cat: CatName }) {
-  const size = 60
+  const size = 80
   return (
     <Link
       to="/workout"
@@ -129,7 +129,7 @@ function UpdateJoy() {
   if (!show) return null
   return (
     <div className="pointer-events-none fixed inset-x-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-30 flex flex-col items-center">
-      <CatArt name="joy" size={64} />
+      <CatArt name="joy" size={86} />
       <p className="card-shadow -mt-1 rounded-full bg-butter px-3 py-1 text-xs font-extrabold text-ink-strong">
         FitFit обновился
       </p>
@@ -159,7 +159,7 @@ function EmptyState() {
         Прогресс
       </h1>
       <div className="flex flex-col items-center gap-1 rounded-2xl bg-sky p-6 text-center">
-        <CatArt name="band" size={96} />
+        <CatArt name="band" size={130} />
         <p className="mt-2 text-[17px] font-bold text-ink-strong">Тут появятся твои цифры</p>
         <p className="text-sm text-muted">
           Тонны, часы и даже «+дни жизни».

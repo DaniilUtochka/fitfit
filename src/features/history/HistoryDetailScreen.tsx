@@ -19,7 +19,7 @@ export function HistoryDetailScreen() {
 
       {session.isPending ? (
         <div className="flex flex-col items-center gap-2 py-8">
-          <CatArt name="sleepy" size={110} />
+          <CatArt name="sleepy" size={148} />
           <p className="font-bold text-muted">Загрузка…</p>
         </div>
       ) : session.isError ? (
@@ -91,7 +91,7 @@ function DetailBody({
           за полностью выполненный день — довольный кот (слайс 15) */}
       <h2 className="mb-2 flex min-h-[44px] items-center justify-between text-sm font-bold text-muted uppercase">
         Резюме
-        {allDone && <CatArt name="band" size={44} animated={false} />}
+        {allDone && <CatArt name="band" size={60} animated={false} />}
       </h2>
       <div className="mb-4 flex flex-col gap-3">
         <div className="card-shadow rounded-2xl bg-surface p-2.5">

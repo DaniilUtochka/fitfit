@@ -123,7 +123,7 @@ function ProfileMenu({ email }: { email: string }) {
         >
           {/* Кот выглядывает из-за верхнего края панели: не тапабелен, мешать нечему */}
           <span className="pointer-events-none absolute -top-5 left-3 -rotate-[10deg]">
-            <CatArt name="dumbbell" size={34} />
+            <CatArt name="dumbbell" size={46} />
           </span>
           <p className="min-w-0 truncate px-3 py-2 text-sm text-muted">{email}</p>
           <div className="mx-3 mb-1 border-t-2 border-dashed border-line-2" />
@@ -230,7 +230,7 @@ function BrandMark() {
       className="card-shadow mb-4 grid size-[112px] place-items-center rounded-[28px] bg-lilac"
       aria-hidden="true"
     >
-      <CatArt name="band" size={84} />
+      <CatArt name="band" size={114} />
     </div>
   )
 }

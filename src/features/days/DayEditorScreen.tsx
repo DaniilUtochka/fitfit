@@ -37,7 +37,7 @@ export function DayEditorScreen() {
 
           {day.data.template_exercises.length === 0 ? (
             <div className="mb-4 flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-              <CatArt name="band" size={80} />
+              <CatArt name="band" size={108} />
               <p className="font-bold text-ink">Пока пусто</p>
               <p className="text-sm text-muted">Добавь упражнение в форме ниже</p>
             </div>

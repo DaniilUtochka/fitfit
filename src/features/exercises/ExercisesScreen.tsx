@@ -40,7 +40,7 @@ export function ExercisesScreen() {
         <p className="text-danger">Ошибка: {(exercises.error as Error).message}</p>
       ) : exercises.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <CatArt name="dumbbell" size={80} />
+          <CatArt name="dumbbell" size={108} />
           <p className="font-bold text-ink">Пока пусто</p>
           <p className="text-sm text-muted">Заведи первое упражнение в форме выше</p>
         </div>

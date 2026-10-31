@@ -49,7 +49,7 @@ function CenterMsg({ text, danger }: { text: string; danger?: boolean }) {
     <p className="text-danger">{text}</p>
   ) : (
     <div className="flex flex-col items-center gap-2 py-8">
-      <CatArt name="sleepy" size={110} />
+      <CatArt name="sleepy" size={148} />
       <p className="font-bold text-muted">{text}</p>
     </div>
   )
@@ -73,7 +73,7 @@ function DayChooser() {
         <p className="text-danger">Ошибка: {(days.error as Error).message}</p>
       ) : days.data.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl bg-sky p-6 text-center">
-          <CatArt name="dumbbell" size={80} />
+          <CatArt name="dumbbell" size={108} />
           <p className="font-bold text-ink">Дней пока нет</p>
           <p className="text-sm text-muted">Собери первый день в разделе «Дни»</p>
         </div>
@@ -116,7 +116,7 @@ function SummaryScreen({
   return (
     <div className="flex flex-col">
       {/* joy вытянутый вверх — берём меньше, чтобы резюме не расползалось */}
-      <CatArt name={cat} size={cat === 'joy' ? 88 : 116} />
+      <CatArt name={cat} size={cat === 'joy' ? 118 : 156} />
       {prs > 0 && (
         <p className="text-center text-sm font-extrabold text-brand">
           Личных рекордов: {prs} — план перезапишется сам
@@ -493,9 +493,9 @@ function RestBar({
   return (
     <div className="fixed inset-x-0 bottom-[calc(53px+env(safe-area-inset-bottom))] z-20 px-4">
       <div className="card-shadow mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-butter p-3">
-        {/* Кот по высоте ~40px: лежебока широкая, повязка вертикальная */}
-        <span className="flex w-[40px] shrink-0 items-center justify-center">
-          <CatArt name={done ? 'band' : 'loaf'} size={done ? 32 : 72} />
+        {/* Кот по высоте ~48px: лежебока широкая, повязка вертикальная */}
+        <span className="flex w-[48px] shrink-0 items-center justify-center">
+          <CatArt name={done ? 'band' : 'loaf'} size={done ? 44 : 60} />
         </span>
         <span
           className={`font-display tabular text-2xl font-extrabold ${
